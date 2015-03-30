@@ -93,7 +93,7 @@
         case DT_Date:                   return @"date";
         default:
         {
-            NSLog(@"oh no, unrecognized data type : %ld", (unsigned long)type);
+            NSLog(@"oh no, unrecognized data type : %lu", (unsigned long)type);
             return @"";
         }
     }

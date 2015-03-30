@@ -14,7 +14,7 @@
 #define DBNAME @"EasyFMDB.db"
 
 #define RANGE_SQL(__r) \
-    __r.length == 0 ? @"" : [NSString stringWithFormat:@"limit %ld offset %ld", (unsigned long)__r.length, (unsigned long)__r.location]
+    __r.length == 0 ? @"" : [NSString stringWithFormat:@"limit %lu offset %lu", (unsigned long)__r.length, (unsigned long)__r.location]
 
 #define EXECUTE_BLOCK1(__result) if(block) {block(__result);}
 #define EXECUTE_BLOCK2(__result, __array) if (block) {block(__result, __array);}
@@ -695,7 +695,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
                     }
                     default:
                     {
-                        NSLog(@"unrecognized data type(%ld)!", (unsigned long)p.type);
+                        NSLog(@"unrecognized data type(%lu)!", (unsigned long)p.type);
                         break;
                     }
                 }
@@ -780,7 +780,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         NSString *property = [properties objectAtIndex:i];
         if (property.length == 0)
         {
-            NSLog(@"property at index %ld is empty", (unsigned long)i);
+            NSLog(@"property at index %lu is empty", (unsigned long)i);
             continue;
         }
         
@@ -796,7 +796,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         NSUInteger propertyValuesCount = propertyValues.count;
         if (propertyValuesCount == 0)
         {
-            NSLog(@"property values of property %@ at index %ld is empty", property, (unsigned long)i);
+            NSLog(@"property values of property %@ at index %lu is empty", property, (unsigned long)i);
             continue;
         }
         
@@ -867,7 +867,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         NSString *property = [updatedPropertes objectAtIndex:i];
         if (property.length == 0)
         {
-            NSLog(@"oh no, property %@ at index %ld is nil", updatedPropertes, (unsigned long)i);
+            NSLog(@"oh no, property %@ at index %lu is nil", updatedPropertes, (unsigned long)i);
             continue;
         }
         if ([property isEqualToString:@"id"])
