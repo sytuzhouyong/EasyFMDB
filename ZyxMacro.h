@@ -44,6 +44,31 @@
 #define TABLE_NAME(__m)                         TABLE_NAME_C(__m.class)
 #define TABLE_NAME_S(__n)                       [NSString stringWithFormat:@"T_%@", __n]
 
+#pragma mark - XCode Colors
+
+#define XCODE_COLORS_ESCAPE_MAC @"\033["
+#define XCODE_COLORS_ESCAPE_IOS @"\xC2\xA0["
+
+#if 0//TARGET_OS_IPHONE
+#   define XCODE_COLORS_ESCAPE  XCODE_COLORS_ESCAPE_IOS
+#else
+#   define XCODE_COLORS_ESCAPE  XCODE_COLORS_ESCAPE_MAC
+#endif
+
+#define XCODE_COLORS_RESET_FG  XCODE_COLORS_ESCAPE @"fg;" // Clear any foreground color
+#define XCODE_COLORS_RESET_BG  XCODE_COLORS_ESCAPE @"bg;" // Clear any background color
+#define XCODE_COLORS_RESET     XCODE_COLORS_ESCAPE @";"   // Clear any foreground or background color
+
+#define LogRed(frmt, ...) NSLog((XCODE_COLORS_ESCAPE @"fg249,73,72;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
+#define LogGreen(frmt, ...) NSLog((XCODE_COLORS_ESCAPE @"fg42,201,51;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
+#define LogYellow(frmt, ...) NSLog((XCODE_COLORS_ESCAPE @"fg253,177,36;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
+
+#define LogError(frmt, ...) LogRed(frmt, ....)
+#define LogWarning(frmt, ...) LogYellow(frmt, ....)
+#define LogInfo(frmt, ...) LogGreen(frmt, ....)
+
+#pragma mark - Time Tick
+
 #define TICK   NSDate *startTime = [NSDate date]
 #define TOCK   NSLog(@"Time: %f", -[startTime timeIntervalSinceNow])
 

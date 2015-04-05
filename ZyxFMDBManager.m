@@ -43,7 +43,7 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
                 FMDatabase *db = [[FMDatabase alloc] initWithPath:dbPath];
                 if (![db open])
                 {
-                    NSLog(@"oh no, open db in (%@) failed!", dbPath);
+                    LogError(@"oh no, open db in (%@) failed!", dbPath);
                     exit(0);
                 }
                 
@@ -57,7 +57,7 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
         }
         
         _dbQueue = [[FMDatabaseQueue alloc] initWithPath:dbPath];
-        NSLog(@"dbPath = %@", dbPath);
+        LogInfo(@"dbPath = %@", dbPath);
     }
 }
 
@@ -70,7 +70,7 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
         FMDatabase *db = [[FMDatabase alloc] initWithPath:dbPath];
         if (![db open])
         {
-            NSLog(@"oh no, open db in (%@) failed!", dbPath);
+            LogError(@"oh no, open db in (%@) failed!", dbPath);
             break;
         }
         
@@ -82,19 +82,19 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
             
             if (![db executeUpdate:sql])
             {
-                NSLog(@"oh no, create table(%@) failed!", TABLE_NAME_C(clazz));
+                LogError(@"oh no, create table(%@) failed!", TABLE_NAME_C(clazz));
                 break;
             }
         }
         
         [db close];
         
-        NSLog(@"create table success!");
+        LogGreen(@"create table success!");
         return;
     }
     while (NO);
     
-    NSLog(@"oh no, create table failed!");
+    LogError(@"oh no, create table failed!");
     exit(0);
 }
 
@@ -111,7 +111,7 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
         {
             if (![db executeUpdate:[clazz sql]])
             {
-                NSLog(@"oh no, create table (%@) failed!", tableName);
+                LogError(@"oh no, create table (%@) failed!", tableName);
                 exit(0);
             }
         }
@@ -138,7 +138,7 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
             // there are new declared properties in model, so update them into table
             if (![db beginTransaction])
             {
-                NSLog(@"db begin transaction failed!");
+                LogError(@"db begin transaction failed!");
                 exit(0);
             }
             
@@ -149,14 +149,14 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
                 
                 if (![db executeUpdate:sql])
                 {
-                    NSLog(@"oh no, add column to db failed, sql:[%@], errro code:%d, error message:%@", sql, db.lastErrorCode, db.lastErrorMessage);
+                    LogError(@"oh no, add column to db failed, sql:[%@], errro code:%d, error message:%@", sql, db.lastErrorCode, db.lastErrorMessage);
                     exit(0);
                 }
             }
             
             if (![db commit])
             {
-                NSLog(@"db commit failed!");
+                LogError(@"db commit failed!");
                 exit(0);
             }
         }
@@ -171,12 +171,12 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
     BOOL result = [db executeUpdate:sql withArgumentsInArray:[model updatedValuesExceptId]];
     if (!result)
     {
-        NSLog(@"db add model %@ failed, error code: %d, erro message: %@", model, db.lastErrorCode, db.lastErrorMessage);
+        LogError(@"db add model %@ failed, error code: %d, erro message: %@", model, db.lastErrorCode, db.lastErrorMessage);
     }
     else
     {
         long long last = [db lastInsertRowId];
-        NSLog(@"last insert row id = %lld, in table : %@", last, TABLE_NAME(model));
+        LogInfo(@"last insert row id = %lld, in table : %@", last, TABLE_NAME(model));
         model.id = last;
     }
     return result;
@@ -264,7 +264,7 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
 {
     if (updates.count == 0)
     {
-        NSLog(@"oh no, update with no property");
+        LogWarning(@"oh no, update with no property");
         EXECUTE_BLOCK1(NO);
     }
     
@@ -289,7 +289,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
 {
     if (updates.count == 0)
     {
-        NSLog(@"oh no, update with no property");
+        LogWarning(@"oh no, update with no property");
         EXECUTE_BLOCK1(NO);
     }
     
@@ -320,7 +320,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         ZyxBaseModel *model = dict[kEasyFMDBModel];
         if (model == nil)
         {
-            NSLog(@"oh no, kEasyFMDBModel in dict(%@) is nil!", dict);
+            LogError(@"oh no, kEasyFMDBModel in dict(%@) is nil!", dict);
             return NO;
         }
         
@@ -345,8 +345,8 @@ queryPropertiesAndValues:(NSDictionary *)queries
             }
             else
             {
-                NSLog(@"oh no, nil kEasyFMDBQueryProperties and nil kEasyFMDBQueryProperties* in dict(%@), "
-                          "but id in model(%@) is 0!", dict, model);
+                LogError(@"oh no, nil kEasyFMDBQueryProperties and nil kEasyFMDBQueryProperties* in dict(%@), "
+                         "but id in model(%@) is 0!", dict, model);
                 return NO;
             }
         }
@@ -355,7 +355,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
             NSArray *updates = [self arrayInDictionary:dict forKey:kEasyFMDBUpdateProperties];
             if (updates == nil)
             {
-                NSLog(@"oh no, invalid param of kEasyFMDBUpdateProperties in dict(%@)", dict);
+                LogError(@"oh no, invalid param of kEasyFMDBUpdateProperties in dict(%@)", dict);
                 return NO;
             }
             
@@ -396,7 +396,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
             
             sql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), sql];
             logSql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), logSql];
-            NSLog(@"delete sql:%@", logSql);
+            LogInfo(@"delete sql:%@", logSql);
             result = [db executeUpdate:sql withArgumentsInArray:values];
         }
         [self checkUpdateSQLResult:db];
@@ -411,7 +411,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         for (ZyxBaseModel *model in models)
         {
             NSString *sql = [NSString stringWithFormat:@"delete from %@ where id=%lld", TABLE_NAME(model), model.id];
-            NSLog(@"delete sql: %@", sql);
+            LogInfo(@"delete sql: %@", sql);
             result &= [db executeUpdate:sql];
             [self checkUpdateSQLResult:db];
         }
@@ -424,7 +424,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
     [_dbQueue inDatabase:^(FMDatabase *db) {
         NSString *sql = [NSString stringWithFormat:@"delete from %@", TABLE_NAME_C(c)];
         BOOL result = [db executeUpdate:sql];
-        NSLog(@"delete all sql: %@", sql);
+        LogInfo(@"delete all sql: %@", sql);
         [self checkUpdateSQLResult:db];
         EXECUTE_BLOCK1(result);
     }];
@@ -455,7 +455,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         
         sql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), sql];
         logSql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), logSql];
-        NSLog(@"delete sql: %@", logSql);
+        LogInfo(@"delete sql: %@", logSql);
         BOOL result = [db executeUpdate:sql withArgumentsInArray:values];
         [self checkUpdateSQLResult:db];
         EXECUTE_BLOCK1(result);
@@ -480,7 +480,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         
         sql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), sql];
         logSql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), logSql];
-        NSLog(@"delete sql: %@", logSql);
+        LogInfo(@"delete sql: %@", logSql);
         BOOL result = [db executeUpdate:sql withArgumentsInArray:values];
         [self checkUpdateSQLResult:db];
         EXECUTE_BLOCK1(result);
@@ -548,7 +548,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
     NSString *rangeSQL = RANGE_SQL(range);
     NSString *sql = [NSString stringWithFormat:@"select * from %@ %@ %@", TABLE_NAME_C(c), orderSQL, rangeSQL];
     sql = [sql stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-    NSLog(@"queryAll sql: %@", sql);
+    LogInfo(@"queryAll sql: %@", sql);
     NSArray *array = [self executeQuery:c withSQL:sql values:[NSArray array]];
     EXECUTE_BLOCK2(array != nil, array);
 }
@@ -589,7 +589,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
     NSString *rangeSQL = RANGE_SQL(range);
     sql = [NSString stringWithFormat:@"select * from %@ where %@ %@ %@", TABLE_NAME(model), sql, orderSQL, rangeSQL];
     logSQL = [NSString stringWithFormat:@"select * from %@ where %@ %@ %@", TABLE_NAME(model), logSQL, orderSQL, rangeSQL];
-    NSLog(@"select sql: %@", logSQL);
+    LogInfo(@"select sql: %@", logSQL);
     
     NSArray *array = [self executeQuery:model.class withSQL:sql values:values];
     EXECUTE_BLOCK2(array != nil, array);
@@ -624,7 +624,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         
         if (![self parseQueryParam:param propertiesValues:&propertiesValues matches:&matches logics:&logics orders:&orders range:&range])
         {
-            NSLog(@"parse query param(%@) failed!", param);
+            LogError(@"parse query param(%@) failed!", param);
             return;
         }
         
@@ -633,20 +633,20 @@ queryPropertiesAndValues:(NSDictionary *)queries
 }
 
 #define CASE_DTTYPE_1(__dttype, __type, __func1, __func2) \
-    case __dttype: \
-    { \
-        __type v = (__type)[result __func1:p.nameInDB]; \
-        [bm setValue:[NSNumber __func2:v] forKey:name]; \
-        break; \
-    }\
+case __dttype: \
+{ \
+__type v = (__type)[result __func1:p.nameInDB]; \
+[bm setValue:[NSNumber __func2:v] forKey:name]; \
+break; \
+}\
 
 #define CASE_DTTYPE_2(__dttype, __type, __func) \
-    case __dttype: \
-    { \
-        __type v = (__type)[result __func:p.nameInDB]; \
-        [bm setValue:v forKey:name]; \
-        break; \
-    }\
+case __dttype: \
+{ \
+__type v = (__type)[result __func:p.nameInDB]; \
+[bm setValue:v forKey:name]; \
+break; \
+}\
 
 // 查询功能函数
 - (NSArray *)executeQuery:(Class)c withSQL:(NSString *)sql values:(NSArray *)values
@@ -674,17 +674,17 @@ queryPropertiesAndValues:(NSDictionary *)queries
                 ZyxFieldAttribute *p = [propertyDict objectForKey:name];
                 switch (p.type)
                 {
-                    CASE_DTTYPE_1(DT_BOOL, BOOL, boolForColumn, numberWithBool);
-                    CASE_DTTYPE_1(DT_Int, int, intForColumn, numberWithInt);
-                    CASE_DTTYPE_1(DT_UnsignedInt, unsigned, unsignedLongLongIntForColumn, numberWithUnsignedInt);
-                    CASE_DTTYPE_1(DT_Long, long, longForColumn, numberWithLong);
-                    CASE_DTTYPE_1(DT_LongLongInt, long long int, longLongIntForColumn, numberWithLongLong);
-                    CASE_DTTYPE_1(DT_UnsignedLongLongInt, unsigned long long int, unsignedLongLongIntForColumn, numberWithUnsignedLongLong);
-                    CASE_DTTYPE_1(DT_Float, double, doubleForColumn, numberWithDouble);
-                    CASE_DTTYPE_1(DT_Double, double, doubleForColumn, numberWithDouble);
-                    CASE_DTTYPE_2(DT_Date, NSDate*, dateForColumn);
-                    CASE_DTTYPE_2(DT_String, NSString*, stringForColumn);
-                    CASE_DTTYPE_2(DT_Object, id, objectForColumnName);
+                        CASE_DTTYPE_1(DT_BOOL, BOOL, boolForColumn, numberWithBool);
+                        CASE_DTTYPE_1(DT_Int, int, intForColumn, numberWithInt);
+                        CASE_DTTYPE_1(DT_UnsignedInt, unsigned, unsignedLongLongIntForColumn, numberWithUnsignedInt);
+                        CASE_DTTYPE_1(DT_Long, long, longForColumn, numberWithLong);
+                        CASE_DTTYPE_1(DT_LongLongInt, long long int, longLongIntForColumn, numberWithLongLong);
+                        CASE_DTTYPE_1(DT_UnsignedLongLongInt, unsigned long long int, unsignedLongLongIntForColumn, numberWithUnsignedLongLong);
+                        CASE_DTTYPE_1(DT_Float, double, doubleForColumn, numberWithDouble);
+                        CASE_DTTYPE_1(DT_Double, double, doubleForColumn, numberWithDouble);
+                        CASE_DTTYPE_2(DT_Date, NSDate*, dateForColumn);
+                        CASE_DTTYPE_2(DT_String, NSString*, stringForColumn);
+                        CASE_DTTYPE_2(DT_Object, id, objectForColumnName);
                     case DT_UTF8String:
                     {
                         const char *psz = (const char *)[result UTF8StringForColumnName:p.nameInDB];
@@ -695,7 +695,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
                     }
                     default:
                     {
-                        NSLog(@"unrecognized data type(%lu)!", (unsigned long)p.type);
+                        LogWarning(@"unrecognized data type(%lu)!", (unsigned long)p.type);
                         break;
                     }
                 }
@@ -780,14 +780,14 @@ queryPropertiesAndValues:(NSDictionary *)queries
         NSString *property = [properties objectAtIndex:i];
         if (property.length == 0)
         {
-            NSLog(@"property at index %lu is empty", (unsigned long)i);
+            LogWarning(@"property at index %lu is empty", (unsigned long)i);
             continue;
         }
         
         ZyxFieldAttribute *p = [propertyDict objectForKey:property];
         if (p == nil)
         {
-            NSLog(@"update unknown property(%@) in class(%@)", property, NSStringFromClass(model.class));
+            LogWarning(@"update unknown property(%@) in class(%@)", property, NSStringFromClass(model.class));
             continue;
         }
         
@@ -796,7 +796,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         NSUInteger propertyValuesCount = propertyValues.count;
         if (propertyValuesCount == 0)
         {
-            NSLog(@"property values of property %@ at index %lu is empty", property, (unsigned long)i);
+            LogWarning(@"property values of property %@ at index %lu is empty", property, (unsigned long)i);
             continue;
         }
         
@@ -867,7 +867,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         NSString *property = [updatedPropertes objectAtIndex:i];
         if (property.length == 0)
         {
-            NSLog(@"oh no, property %@ at index %lu is nil", updatedPropertes, (unsigned long)i);
+            LogWarning(@"oh no, property %@ at index %lu is nil", updatedPropertes, (unsigned long)i);
             continue;
         }
         if ([property isEqualToString:@"id"])
@@ -878,7 +878,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         ZyxFieldAttribute *p = [propertyDict objectForKey:property];
         if (p == nil)
         {
-            NSLog(@"oh no, unknown property(%@) in class(%@)", property, NSStringFromClass(model.class));
+            LogWarning(@"oh no, unknown property(%@) in class(%@)", property, NSStringFromClass(model.class));
             continue;
         }
         
@@ -955,7 +955,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
     }
     else
     {
-        NSLog(@"makeUpdateSQL param queries(%@) is not a valid object", queries);
+        LogWarning(@"makeUpdateSQL param queries(%@) is not a valid object", queries);
         return @[@"", @"", @[]];
     }
     
@@ -975,7 +975,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
     NSString *tableName = TABLE_NAME(model);
     NSString *sql = [NSString stringWithFormat:@"update %@ set %@ where %@", tableName, updateSQL, querySQL];
     NSString *logSQL = [NSString stringWithFormat:@"update %@ set %@ where %@", tableName, updateLogSQL, queryLogSQL];
-    NSLog(@"update sql: %@", logSQL);
+    LogInfo(@"update sql: %@", logSQL);
     
     return @[sql, logSQL, values];
 }
@@ -994,7 +994,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         ZyxFieldAttribute *p = [propertyDict objectForKey:key];
         if (p == nil)
         {
-            NSLog(@"makeInsertSQL: unknown property(%@) in class(%@)", key, NSStringFromClass(model.class));
+            LogWarning(@"makeInsertSQL: unknown property(%@) in class(%@)", key, NSStringFromClass(model.class));
             continue;
         }
         [psql appendFormat:@"%@, ", p.nameInDB];
@@ -1014,7 +1014,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         NSString *v = [vsql substringToIndex:vsql.length-2];
         NSString *l = [lsql substringToIndex:lsql.length-2];
         sql = [NSString stringWithFormat:@"insert into %@ (%@) values (%@)", TABLE_NAME(model), p, v];
-        NSLog(@"makeInsertSQL:\n\t insert into %@ (%@) values (%@)", TABLE_NAME(model), p, l);
+        LogInfo(@"makeInsertSQL:\n\t insert into %@ (%@) values (%@)", TABLE_NAME(model), p, l);
         
     } while (FALSE);
     
@@ -1037,7 +1037,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         ZyxFieldAttribute *property = [propertyDict objectForKey:key];
         if (property == nil)
         {
-            NSLog(@"orders key(%@) is not exist", key);
+            LogWarning(@"orders key(%@) is not exist", key);
             continue;
         }
         
@@ -1084,11 +1084,11 @@ queryPropertiesAndValues:(NSDictionary *)queries
     int changes = db.changes;
     if (changes < 1)
     {
-        NSLog(@"oh no, update sql do not make any changes in db, error code:%d, error message:%@", db.lastErrorCode, db.lastErrorMessage);
+        LogWarning(@"oh no, update sql do not make any changes in db, error code:%d, error message:%@", db.lastErrorCode, db.lastErrorMessage);
     }
     else
     {
-        NSLog(@"yes, update sql make effective %d rows", changes);
+        LogInfo(@"yes, update sql make effective %d rows", changes);
     }
 }
 
@@ -1116,7 +1116,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
     }
     else
     {
-        NSLog(@"oh no, param invalid!");
+        LogError(@"oh no, param invalid!");
         return;
     }
     
@@ -1125,11 +1125,11 @@ queryPropertiesAndValues:(NSDictionary *)queries
         case EasyFMDBCapabilityType_Add:
             [self add:model result:block];
             break;
-        
+            
         case EasyFMDBCapabilityType_Update:
             [self update:param result:block];
             break;
-        
+            
         case EasyFMDBCapabilityType_Delete:
             [self delete:param result:block];
             break;
@@ -1152,7 +1152,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
 {
     if (![dict isKindOfClass:NSDictionary.class])
     {
-        NSLog(@"parseQueryParam1 : param is not a NSDictionary object!");
+        LogError(@"parseQueryParam1 : param is not a NSDictionary object!");
         return NO;
     }
     
@@ -1165,7 +1165,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         }
         else
         {
-            NSLog(@"kEasyFMDBPropertiesValues in dict(%@) is not a valid NSDictionary!", dict);
+            LogError(@"kEasyFMDBPropertiesValues in dict(%@) is not a valid NSDictionary!", dict);
             return NO;
         }
     }
@@ -1180,7 +1180,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
     }
     else
     {
-        NSLog(@"kEasyFMDBOrders in dict(%@) is invlalid, so set it to nil", dict);
+        LogWarning(@"kEasyFMDBOrders in dict(%@) is invlalid, so set it to nil", dict);
         *orders = nil;
     }
     
@@ -1209,7 +1209,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         }
         else
         {
-            NSLog(@"(%@) in dict(%@) is invlalid, so return nil", key, dict);
+            LogWarning(@"(%@) in dict(%@) is invlalid, so return nil", key, dict);
         }
     }
     return array;
