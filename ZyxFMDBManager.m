@@ -16,8 +16,8 @@
 #define RANGE_SQL(__r) \
     __r.length == 0 ? @"" : [NSString stringWithFormat:@"limit %lu offset %lu", (unsigned long)__r.length, (unsigned long)__r.location]
 
-#define EXECUTE_BLOCK1(__result) if(block) {block(__result);}
-#define EXECUTE_BLOCK2(__result, __array) if (block) {block(__result, __array);}
+#define EXECUTE_BLOCK1(__result) !block ?: block(__result)
+#define EXECUTE_BLOCK2(__result, __array) !block ?: block(__result, __array)
 
 @implementation ZyxFMDBManager
 {
