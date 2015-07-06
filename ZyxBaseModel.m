@@ -12,8 +12,7 @@
 #import "ZyxMacro.h"
 #import "ZyxFieldAttribute.h"
 
-@implementation ZyxBaseModel
-{
+@implementation ZyxBaseModel {
     NSMutableArray *_updatedProperties;
     NSMutableArray *_updatedValues;
     NSMutableArray *_updatedPropertiesExceptId;
@@ -22,14 +21,12 @@
     BOOL _isObserverEnabled;
 }
 
-+ (void)registeModel:(Class)clazz
-{
++ (void)registeModel:(Class)clazz {
     NSMutableSet *registedModels = [self.class registedModels];
     [registedModels addObject:NSStringFromClass(clazz)];
 }
 
-+ (NSMutableSet *)registedModels
-{
++ (NSMutableSet *)registedModels {
     static NSMutableSet *registedModels = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -40,19 +37,15 @@
 
 #pragma mark - Init
 
-+ (void)load
-{
++ (void)load {
 }
 
-- (id)init
-{
+- (id)init {
     return [self initWithObserverEnabledFlag:YES];
 }
 
-- (id)initWithObserverEnabledFlag:(BOOL)isObserverEnable
-{
-    if (self = [super init])
-    {
+- (id)initWithObserverEnabledFlag:(BOOL)isObserverEnable {
+    if (self = [super init]) {
         _isObserverEnabled = isObserverEnable;
         _updatedProperties = [[NSMutableArray alloc] init];
         _updatedValues = [[NSMutableArray alloc] init];
@@ -60,8 +53,7 @@
         _updatedValuesExceptId = [[NSMutableArray alloc] init];
         _watchedKeys = [[NSMutableArray alloc] init];
         
-        if (isObserverEnable)
-        {
+        if (isObserverEnable) {
             [self addWatchKeys];
         }
     }
@@ -247,8 +239,7 @@
 }
 
 /// array of all ZyxFieldAttribute object in Class, the same order with that declared in class
-+ (NSArray *)fieldsAttributeInClass:(Class)class
-{
++ (NSArray *)fieldsAttributeInClass:(Class)class {
     NSMutableArray *array = [NSMutableArray arrayWithCapacity:16];
     
     Class c = class;
@@ -257,12 +248,10 @@
     
     NSDictionary *propertyDict = [class propertiesDictionary];
     
-    while (![classString isEqualToString:objectString])
-    {
+    while (![classString isEqualToString:objectString]) {
         unsigned int outCount;
         objc_property_t *properties = class_copyPropertyList(c, &outCount);
-        for (unsigned int i = 0; i<outCount; i++)
-        {
+        for (unsigned int i = 0; i<outCount; i++) {
             objc_property_t property = properties[i];
         
             // name
@@ -281,44 +270,34 @@
     return  array;
 }
 
-
-+ (NSString *)propertyNameToDBName:(NSString *)propertyName isBaseModel:(BOOL)isBaseModel
-{
++ (NSString *)propertyNameToDBName:(NSString *)propertyName isBaseModel:(BOOL)isBaseModel {
     NSMutableString *dbName = [NSMutableString string];
     NSUInteger length = propertyName.length;
     
-    for (NSUInteger i=0; i<length; i++)
-    {
+    for (NSUInteger i=0; i<length; i++) {
         unichar c = [propertyName characterAtIndex:i];
-        if (c >= 'A' && c <= 'Z')
-        {
+        if (c >= 'A' && c <= 'Z') {
             [dbName appendFormat:@"_%c", tolower(c)];
-        }
-        else
-        {
+        } else {
             [dbName appendFormat:@"%c", c];
         }
     }
     
-    if (isBaseModel)
-    {
+    if (isBaseModel) {
         [dbName appendString:@"_id"];
     }
     
     return dbName;
 }
 
-+ (NSString *)dbNameToPropertyName:(NSString *)dbName
-{
++ (NSString *)dbNameToPropertyName:(NSString *)dbName {
     NSArray *elements = [dbName componentsSeparatedByString:@"_"];
     NSMutableString *propertyName = [NSMutableString stringWithString:elements.firstObject];
-    if (elements.count < 2)
-    {
+    if (elements.count < 2) {
         return propertyName;
     }
     
-    for (NSUInteger i=1; i<elements.count; i++)
-    {
+    for (NSUInteger i=1; i<elements.count; i++) {
         NSString *element = elements[i];
         [propertyName appendString:[element capitalizedString]];
     }
@@ -327,8 +306,7 @@
 
 #pragma mark -
 
-+ (EDataType)dataTypeWithString:(NSString *)typeString
-{
++ (EDataType)dataTypeWithString:(NSString *)typeString {
 //    NSLog(@"type string : %@", typeString);
     const char *str = typeString.UTF8String;
     
@@ -345,16 +323,13 @@
 
 #pragma mark - dealloc
 
-- (void)dealloc
-{
-    for (NSString *key in _watchedKeys)
-    {
+- (void)dealloc {
+    for (NSString *key in _watchedKeys) {
         [self removeObserver:self forKeyPath:key context:nil];
     }
 }
 
-+ (void)logType
-{
++ (void)logType {
     NSLog(@"char: %s", @encode(char));
     NSLog(@"BOOL : %s", @encode(BOOL));
     
@@ -367,56 +342,38 @@
 }
 
 #pragma mark - Message Forward
-- (BOOL)resolveInstanceMethod {
-    return NO;
-}
-
-- (id)forwardingTargetForSelector:(SEL)selector
-{
-    NSString *selectorString = NSStringFromSelector(selector);
-    NSLog(@"selector = %@", selectorString);
-    
-    do {
-        if (![selectorString hasPrefix:@"get"])
-            break;
-        
-        NSScanner *scanner = [NSScanner scannerWithString:selectorString];
-        if (![scanner scanString:@"get" intoString:NULL])
-            break;
-        NSString *upperString = nil;
-        if (![scanner scanCharactersFromSet:[NSCharacterSet uppercaseLetterCharacterSet] intoString:&upperString])
-            break;
-        
-        NSString *partKey = [selectorString substringFromIndex:scanner.scanLocation];
-        NSString *propertyKey = [NSString stringWithFormat:@"%@%@", upperString.lowercaseString, partKey];
-        
-        NSDictionary *propertiesDict = [self.class propertiesDictionary];
-        ZyxFieldAttribute *property = propertiesDict[propertyKey];
-        if (!property.isBaseModel)
-            break;
-        
-        //        NSUInteger attachedBaseModelId =
-    } while (FALSE);
-    
-    
-    
-    return self;
-}
-
-- (void)forwardInvocation:(NSInvocation *)invocation {
-    
-    SEL orignalSelector = [invocation selector];
-    
-    if ([self respondsToSelector:orignalSelector]) {
-        
-        [invocation invokeWithTarget:self];
-    }
-    
-    else {
-        
-        [super forwardInvocation:invocation];
-    }
-}
+//- (BOOL)resolveInstanceMethod {
+//    return NO;
+//}
+//
+//- (id)forwardingTargetForSelector:(SEL)selector {
+//    NSString *selectorString = NSStringFromSelector(selector);
+//    NSLog(@"selector = %@", selectorString);
+//    
+//    do {
+//        if (![selectorString hasPrefix:@"get"])
+//            break;
+//        
+//        NSScanner *scanner = [NSScanner scannerWithString:selectorString];
+//        if (![scanner scanString:@"get" intoString:NULL])
+//            break;
+//        NSString *upperString = nil;
+//        if (![scanner scanCharactersFromSet:[NSCharacterSet uppercaseLetterCharacterSet] intoString:&upperString])
+//            break;
+//        
+//        NSString *partKey = [selectorString substringFromIndex:scanner.scanLocation];
+//        NSString *propertyKey = [NSString stringWithFormat:@"%@%@", upperString.lowercaseString, partKey];
+//        
+//        NSDictionary *propertiesDict = [self.class propertiesDictionary];
+//        ZyxFieldAttribute *property = propertiesDict[propertyKey];
+//        if (!property.isBaseModel)
+//            break;
+//        
+//        //        NSUInteger attachedBaseModelId =
+//    } while (FALSE);
+//    
+//    return self;
+//}
 
 
 @end

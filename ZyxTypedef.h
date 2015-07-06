@@ -12,16 +12,14 @@
 typedef void (^DBUpdateOperationResultBlock) (BOOL success);
 typedef void (^DBQueryOperationResultBlock) (BOOL success, NSArray *result);
 
-typedef NS_ENUM(NSUInteger, EEasyFMDBCapabilityType)
-{
+typedef NS_ENUM(NSUInteger, EEasyFMDBCapabilityType) {
     EasyFMDBCapabilityType_Add,
     EasyFMDBCapabilityType_Delete,
     EasyFMDBCapabilityType_Update,
     EasyFMDBCapabilityType_Query,
 };
 
-typedef NS_ENUM(NSUInteger, EDataCompareType)
-{
+typedef NS_ENUM(NSUInteger, EDataCompareType) {
     DCT_Equal,
     DCT_NotEqual,
     DCT_Like,
@@ -31,14 +29,12 @@ typedef NS_ENUM(NSUInteger, EDataCompareType)
     DCT_LargerEqual,
 };
 
-typedef NS_ENUM(NSUInteger, ELogicRelationship)
-{
+typedef NS_ENUM(NSUInteger, ELogicRelationship) {
     LR_And,
     LR_Or,
 };
 
-typedef NS_ENUM(NSUInteger, EDataType)
-{
+typedef NS_ENUM(NSUInteger, EDataType) {
     DT_Unkonw,
     DT_BOOL,
     DT_NSInteger,

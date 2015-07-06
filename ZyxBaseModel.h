@@ -6,11 +6,11 @@
 //  Copyright (c) 2013年 sytuzhouyong. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @protocol ZyxBaseModelProtocol
 
-// judge whether propery should be put into propertiesDictionary
+/// judge whether propery should be put into propertiesDictionary
 + (BOOL)predicateProperty:(NSString *)name;
 
 @end
@@ -19,8 +19,7 @@
 // Database related OC object
 // the object inherted from ZyxBaseModel needs to override +(void)load;
 // and in + (void)load method, you should call ZyxBaseModel::registeModel:(Class)clazz.
-@interface ZyxBaseModel : NSObject <ZyxBaseModelProtocol, NSCopying>
-{
+@interface ZyxBaseModel : NSObject <ZyxBaseModelProtocol, NSCopying> {
     /// attached model in this model is initialized, default is NO
     BOOL _isAttachModelInitialized;
 }
@@ -34,14 +33,14 @@
 - (id)initWithObserverEnabledFlag:(BOOL)isObserverEnable;
 - (void)setObserverEnabled:(BOOL)enabled;
 
-// all property info that predicateProperty: method return YES
 // key: property name  value: ZyxFieldAttribute object
+/// all property info that predicateProperty: method return YES
 + (NSDictionary *)propertiesDictionary;
 
-// property array which updated
+/// property array which updated
 - (NSArray *)updatedProperties;
 - (NSArray *)updatedValues;
-// property array except id which updated
+/// property array except id which updated
 - (NSArray *)updatedPropertiesExceptId;
 - (NSArray *)updatedValuesExceptId;
 

@@ -15,26 +15,21 @@
 
 #if !__has_feature(objc_arc)
     #define SINGLETON_IMPLEMENTATION_PART \
-        + (id)allocWithZone:(NSZone *)zone                                              \
-        {                                                                               \
+        + (id)allocWithZone:(NSZone *)zone {                                            \
             return [[self sharedInstance] retain];                                      \
         }                                                                               \
-        - (id)copyWithZone:(NSZone *)zone                                               \
-        {                                                                               \
+        - (id)copyWithZone:(NSZone *)zone {                                             \
             return self;                                                                \
         }                                                                               \
-        - (id)retain                                                                    \
-        {                                                                               \
+        - (id)retain {                                                                  \
             return self;                                                                \
         }                                                                               \
-        - (NSUInteger)retainCount                                                       \
-        {                                                                               \
+        - (NSUInteger)retainCount {                                                     \
             return NSUIntegerMax;                                                       \
         }                                                                               \
         - (oneway void)release                                                          \
         {}                                                                              \
-        - (id)autorelease                                                               \
-        {                                                                               \
+        - (id)autorelease {                                                             \
             return self;                                                                \
         }
 #else
@@ -42,8 +37,7 @@
 #endif
 
 #define SINGLETON_IMPLEMENTATION(__class__) \
-    + (instancetype)sharedInstance                                                                \
-    {                                                                                   \
+    + (instancetype)sharedInstance {                                                    \
         static __class__ *sharedSingleton_ = nil;                                       \
         static dispatch_once_t predicate;                                               \
         dispatch_once(&predicate, ^{                                                    \
@@ -56,8 +50,7 @@
 
 
 #define SINGLETON_IMPLEMENTATION_ADD(__class__, __m__) \
-    + (instancetype)sharedInstance                                                                \
-    {                                                                                   \
+    + (instancetype)sharedInstance {                                                    \
         static __class__ *sharedSingleton_ = nil;                                       \
         static dispatch_once_t predicate;                                               \
         dispatch_once(&predicate, ^{                                                    \
