@@ -26,7 +26,9 @@ typedef NS_ENUM(NSUInteger, EDataCompareType)
     DCT_NotEqual,
     DCT_Like,
     DCT_Less,
+    DCT_LessEqual,
     DCT_Larger,
+    DCT_LargerEqual,
 };
 
 typedef NS_ENUM(NSUInteger, ELogicRelationship)
@@ -37,19 +39,14 @@ typedef NS_ENUM(NSUInteger, ELogicRelationship)
 
 typedef NS_ENUM(NSUInteger, EDataType)
 {
+    DT_Unkonw,
     DT_BOOL,
-    DT_Int,
-    DT_UnsignedInt,
-    DT_Long,
-    DT_UnsignedLong,
-    DT_LongLongInt,
-    DT_UnsignedLongLongInt,
-    DT_Float,
-    DT_Double,
-    DT_String,
-    DT_UTF8String,
-    DT_Date,
-    DT_Object,
+    DT_NSInteger,
+    DT_NSUInteger,
+    DT_CGFloat,
+    DT_NSString,
+    DT_NSDate,
+    DT_ZyxBaseModel,
 };
 
 #endif

@@ -63,9 +63,9 @@
 #define LogGreen(frmt, ...) NSLog((XCODE_COLORS_ESCAPE @"fg42,201,51;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
 #define LogYellow(frmt, ...) NSLog((XCODE_COLORS_ESCAPE @"fg253,177,36;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
 
-#define LogError(frmt, ...) LogRed(frmt, ....)
-#define LogWarning(frmt, ...) LogYellow(frmt, ....)
-#define LogInfo(frmt, ...) LogGreen(frmt, ....)
+#define LogError(frmt, ...) LogRed(frmt, ##__VA_ARGS__)
+#define LogWarning(frmt, ...) LogYellow(frmt, ##__VA_ARGS__)
+#define LogInfo(frmt, ...) LogGreen(frmt, ##__VA_ARGS__)
 
 #pragma mark - Time Tick
 

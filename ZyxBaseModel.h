@@ -10,7 +10,7 @@
 
 @protocol ZyxBaseModelProtocol
 
-// judge whether propery should be put into propertyDictionary
+// judge whether propery should be put into propertiesDictionary
 + (BOOL)predicateProperty:(NSString *)name;
 
 @end
@@ -20,19 +20,23 @@
 // the object inherted from ZyxBaseModel needs to override +(void)load;
 // and in + (void)load method, you should call ZyxBaseModel::registeModel:(Class)clazz.
 @interface ZyxBaseModel : NSObject <ZyxBaseModelProtocol, NSCopying>
+{
+    /// attached model in this model is initialized, default is NO
+    BOOL _isAttachModelInitialized;
+}
 
-@property (nonatomic, assign) long long id;     // autoincreasement
+@property (nonatomic, assign) NSUInteger id;     // autoincreasement
 
 /// subclass needs to call this method
 + (void)registeModel:(Class)clazz;
-+ (NSMutableArray *)registedModels;
++ (NSMutableSet *)registedModels;
 
 - (id)initWithObserverEnabledFlag:(BOOL)isObserverEnable;
 - (void)setObserverEnabled:(BOOL)enabled;
 
 // all property info that predicateProperty: method return YES
 // key: property name  value: ZyxFieldAttribute object
-+ (NSDictionary *)propertyDictionary;
++ (NSDictionary *)propertiesDictionary;
 
 // property array which updated
 - (NSArray *)updatedProperties;
@@ -43,9 +47,9 @@
 
 // util function
 + (NSString *)sql;
-+ (NSDictionary *)dictOfPropertyWithObject:(Class)c;
-+ (NSArray *)arrayOfPropertyWithObject:(Class)c;
-+ (NSString *)propertyNameToDBName:(NSString *)propertyName;
++ (NSDictionary *)fieldsAttributeDictInClass:(Class)c;
++ (NSArray *)fieldsAttributeInClass:(Class)c;
++ (NSString *)propertyNameToDBName:(NSString *)propertyName isBaseModel:(BOOL)isBaseModel;
 + (NSString *)dbNameToPropertyName:(NSString *)dbName;
 
 @end

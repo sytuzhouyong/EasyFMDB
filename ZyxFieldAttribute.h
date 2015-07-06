@@ -12,16 +12,11 @@
 @interface ZyxDataType : NSObject
 
 + (NSNumber *)boolType;
-+ (NSNumber *)intType;
-+ (NSNumber *)longType;
-+ (NSNumber *)longLongIntType;
-+ (NSNumber *)uLongLongIntType;
-+ (NSNumber *)floatType;
++ (NSNumber *)integerType;
++ (NSNumber *)uintegerType;
 + (NSNumber *)doubleType;
 + (NSNumber *)stringType;
-+ (NSNumber *)utf8StringType;
 + (NSNumber *)dateType;
-+ (NSNumber *)objectType;
 
 + (NSString *)stringWithDataType:(EDataType)type;
 
@@ -31,7 +26,9 @@
 
 @property (nonatomic, assign) EDataType type;       // data type of property
 @property (nonatomic, copy) NSString *name;         // proper name
+@property (nonatomic, copy) NSString *className;    // class name
 @property (nonatomic, copy) NSString *nameInDB;     // related column name in db
+@property (nonatomic, assign) BOOL isBaseModel;
 
 - (id)initWithName:(NSString *)name type:(int)t nameInDB:(NSString *)nit;
 

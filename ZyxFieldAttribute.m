@@ -21,7 +21,6 @@
     return self;
 }
 
-
 @end
 
 @implementation ZyxDataType
@@ -34,45 +33,25 @@
 {
     return [ZyxDataType numberWithDateType:DT_BOOL];
 }
-+ (NSNumber *)intType
++ (NSNumber *)stringType
 {
-    return [ZyxDataType numberWithDateType:DT_Int];
+    return [ZyxDataType numberWithDateType:DT_NSString];
 }
-+ (NSNumber *)longType
++ (NSNumber *)integerType
 {
-    return [ZyxDataType numberWithDateType:DT_Long];
+    return [ZyxDataType numberWithDateType:DT_NSInteger];
 }
-+ (NSNumber *)longLongIntType
++ (NSNumber *)uintegerType
 {
-    return [ZyxDataType numberWithDateType:DT_LongLongInt];
-}
-+ (NSNumber *)uLongLongIntType
-{
-    return [ZyxDataType numberWithDateType:DT_UnsignedLongLongInt];
-}
-+ (NSNumber *)floatType
-{
-    return [ZyxDataType numberWithDateType:DT_Float];
+    return [ZyxDataType numberWithDateType:DT_NSUInteger];
 }
 + (NSNumber *)doubleType
 {
-    return [ZyxDataType numberWithDateType:DT_Double];
-}
-+ (NSNumber *)stringType
-{
-    return [ZyxDataType numberWithDateType:DT_String];
-}
-+ (NSNumber *)utf8StringType
-{
-    return [ZyxDataType numberWithDateType:DT_UTF8String];
+    return [ZyxDataType numberWithDateType:DT_CGFloat];
 }
 + (NSNumber *)dateType
 {
-    return [ZyxDataType numberWithDateType:DT_Date];
-}
-+ (NSNumber *)objectType
-{
-    return [ZyxDataType numberWithDateType:DT_Object];
+    return [ZyxDataType numberWithDateType:DT_NSDate];
 }
 
 + (NSString *)stringWithDataType:(EDataType)type
@@ -80,17 +59,12 @@
     switch (type)
     {
         case DT_BOOL:                   return @"bool";
-        case DT_Int:                    return @"integer";
-        case DT_UnsignedInt:            return @"integer";
-        case DT_Long:                   return @"integer";
-        case DT_UnsignedLong:           return @"integer";
-        case DT_LongLongInt:            return @"integer";
-        case DT_UnsignedLongLongInt:    return @"integer";
-        case DT_Float:                  return @"float";
-        case DT_Double:                 return @"double";
-        case DT_String:                 return @"text";
-        case DT_UTF8String:             return @"text";
-        case DT_Date:                   return @"date";
+        case DT_NSInteger:              return @"integer";
+        case DT_NSUInteger:             return @"integer unsigned";
+        case DT_CGFloat:                return @"double";
+        case DT_NSString:               return @"text";
+        case DT_NSDate:                 return @"date";
+        case DT_ZyxBaseModel:           return @"integer unsigned";
         default:
         {
             NSLog(@"oh no, unrecognized data type : %lu", (unsigned long)type);
