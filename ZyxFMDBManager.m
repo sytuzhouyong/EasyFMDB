@@ -144,8 +144,8 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
     if (!result) {
         LogError(@"db add model %@ failed, error code: %d, erro message: %@", model, db.lastErrorCode, db.lastErrorMessage);
     } else {
-        long long last = [db lastInsertRowId];
-        LogInfo(@"last insert row id = %lld, in table : %@", last, TABLE_NAME(model));
+        NSUInteger last = (NSUInteger)[db lastInsertRowId];
+        LogInfo(@"last insert row id = %lu, in table : %@", last, TABLE_NAME(model));
         model.id = last;
     }
     return result;
@@ -607,7 +607,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
                 case DT_ZyxBaseModel: {
                     Class clazz = NSClassFromString(p.className);
                     
-                    NSUInteger modelId = [result unsignedLongLongIntForColumn:p.nameInDB];
+                    NSUInteger modelId = (NSUInteger)[result unsignedLongLongIntForColumn:p.nameInDB];
                     NSString *sql = [NSString stringWithFormat:@"select * from %@ where id=%lu", TABLE_NAME_S(p.className),modelId];
                     NSArray *models = [self executeQuery:clazz withSQL:sql values:nil inDatabase:db];
                     if (models.count != 0) {
