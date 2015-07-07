@@ -16,16 +16,11 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "EasyFMDB"
-  s.version      = "1.0.0"
+  s.version      = "1.1.0"
   s.summary      = "EasyFMDB provides a way of object oriented to use FMDB."
 
   s.description  = <<-DESC
-                   EasyFMDB provides a way of object oriented to use FMDB.
-
-                   * Think: Why did you write this? What is the focus? What does it do?
-                   * CocoaPods will be using this to generate tags, and improve search results.
-                   * Try to keep it short, snappy and to the point.
-                   * Finally, don't worry about the indent, CocoaPods strips it!
+                   now, EasyFMDB supports one-to-one map relationship.
                    DESC
 
   s.homepage     = "https://github.com/sytuzhouyong/EasyFMDB"
@@ -78,7 +73,7 @@ Pod::Spec.new do |s|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  s.source       = { :git => "https://github.com/sytuzhouyong/EasyFMDB.git", :tag => "1.0.0" }
+  s.source       = { :git => "https://github.com/sytuzhouyong/EasyFMDB.git", :tag => "1.1.0" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
