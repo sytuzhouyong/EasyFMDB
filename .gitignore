@@ -1,8 +1,4 @@
+.DT_Store
 
-*.xcscheme
-
-*.xccheckout
-
-*.xcuserstate
-
-*.xcbkptlist
+xcuserdata/
+xcshareddata/
