@@ -543,17 +543,16 @@ queryPropertiesAndValues:(NSDictionary *)queries
         NSDictionary *dict = param;
         id model = dict[kEasyFMDBModel];
         
-        if ([model isKindOfClass:NSValue.class]) {
-            [self queryAllModels:[model pointerValue] orders:nil range:range result:block];
-            return;
-        }
-        
         if (![self parseQueryParam:param propertiesValues:&propertiesValues matches:&matches logics:&logics orders:&orders range:&range]) {
             LogError(@"parse query param(%@) failed!", param);
             return;
         }
         
-        [self queryModel:model propertiesValues:propertiesValues matches:matches logics:logics orders:orders range:range result:block];
+        if ([model isKindOfClass:NSValue.class]) {
+            [self queryAllModels:[model pointerValue] orders:orders range:range result:block];
+        } else {
+            [self queryModel:model propertiesValues:propertiesValues matches:matches logics:logics orders:orders range:range result:block];
+        }
     }
 }
 

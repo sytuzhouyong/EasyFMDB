@@ -158,7 +158,7 @@
     [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict];
 }
 
-// LR_And: intersection LR_Or: union
+// LR_And: intersection, LR_Or: union
 // select * from T_ZyxContact where home_address like '%1%' and name  = 'name_13' or work_address like '%work%' and mobile_phone like '%phone%'
 - (void)test24_QueryModelByMultiPropertiesAndMatchesAndLogics {
     ZyxContact *model = [[ZyxContact alloc] init];
@@ -170,6 +170,16 @@
     NSDictionary *dict = @{kEasyFMDBModel:model,
                            kEasyFMDBMatches:@[@(DCT_Like), @(DCT_Equal), @(DCT_Like), @(DCT_Like)],
                            kEasyFMDBLogics:@[@(LR_And), @(LR_Or)],
+                           kEasyFMDBBlock:^(BOOL success, NSArray *models){
+                               XCTAssertTrue(models.count > 0);
+                           }};
+    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict];
+}
+
+// queryAll sql: select * from T_ZyxContact order by name desc
+- (void)test25_QueryAllModels {
+    NSDictionary *dict = @{kEasyFMDBModel:[NSValue valueWithPointer: (__bridge const void *)(ZyxContact.class)],
+                           kEasyFMDBOrders:@{@"name": @"desc"},
                            kEasyFMDBBlock:^(BOOL success, NSArray *models){
                                XCTAssertTrue(models.count > 0);
                            }};
@@ -291,9 +301,6 @@
     student.age = 10;
     student.xxx = 20;
     student.heavy = 56.1;
-    student.height = 156.2;
-    student.nickname = @"hahhaha";
-    student.birthday = [NSDate date];
     student.teacher = teacher;
     [[ZyxFMDBManager sharedInstance] callCapabilityType:EasyFMDBCapabilityType_Add withParam:student];
     XCTAssertTrue(teacher.id > 0 && student.id > 0);
@@ -303,6 +310,7 @@
         NSLog(@"teach name = %@", student.teacher.name);
         XCTAssertTrue([student.teacher.name isEqualToString:teacher.name]);
     };
+    // select * from T_Student where (age = 10) and (xxx = 20) and (heavy = 56.1) and (teacher_id = 3) and (id = 3)
     [[ZyxFMDBManager sharedInstance] callCapabilityType:EasyFMDBCapabilityType_Query withParam:@{@"model":student, @"block": block}];
 }
 

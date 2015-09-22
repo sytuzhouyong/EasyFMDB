@@ -17,7 +17,6 @@ a easy way to use fmdb
 准备工作：
 ---------
 ####1. 进入工程目录，运行pod install，安装依赖项目FMDB，打开workspace工程
-如果不需要最新的FMDB功能，可以切换到no_cocoapods分支，下载代码。
 
 ####2. 定义自己的model，看起来像下面的代码：
     
@@ -57,7 +56,7 @@ a easy way to use fmdb
     @end
 
 ####3. 导入接口文件。
-    @import "ZyxFMDBManager.h"
+    #import "EasyFMDB.h"
 
 用例：
 --------
@@ -144,3 +143,29 @@ a easy way to use fmdb
    查询数据和删除功能中的查找部分代码类似，具体代码可以在 EasyFMDBTests.m 中找到。
 
 以上功能只是一部分代码，配合不同的参数基本可以实现对单表的任意操作。
+
+
+1.1.0版本主要更新：
+--------
+####1 支持简单的一对一关系模型，模型代码看起来像这样：
+
+	@interface Teacher : ZyxBaseModel
+	
+	@property (nonatomic, copy) NSString name;
+	
+	@end
+
+	@interface Student : ZyxBaseModel
+
+	@property (nonatomic, copy) NSString name;
+	@property (nonatomic, strong) Teacher *teacher;
+	
+	@end
+
+数据基本操作代码和上面保持一致，具体参见 Tests/TestEasyFMDBTests.m 中的方法 test40_OneToOneRelationship。
+
+####2 注意点：
+#####a)
+	如果查询操作中有关联对象，那么只有关联对象的id有效果，其余属性暂时不起作用，这个功能后面版本再完善，测试代码可以见 Tests/TestEasyFMDBTests.m 中的方法 test40_OneToOneRelationship。
+#####b)
+	基本数据类型不再支持int, long等，需要转化成NSInteger, CGFloat类型
