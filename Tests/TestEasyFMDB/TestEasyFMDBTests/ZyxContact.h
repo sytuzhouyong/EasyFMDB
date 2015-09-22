@@ -11,7 +11,7 @@
 @interface ZyxContact : ZyxBaseModel
 
 @property (nonatomic, copy) NSString *name;
-@property (nonatomic, assign) int age;
+@property (nonatomic, assign) NSInteger age;
 @property (nonatomic, copy) NSString *homeAddress;
 @property (nonatomic, copy) NSString *workAddress;
 @property (nonatomic, copy) NSString *mobilePhone;

@@ -15,7 +15,7 @@
 @property (nonatomic, assign) NSInteger age;
 @property (nonatomic, assign) NSUInteger xxx;
 @property (nonatomic, assign) CGFloat heavy;
-@property (nonatomic, assign) double height;
+@property (nonatomic, assign) CGFloat height;
 @property (nonatomic, copy  ) NSString *nickname;
 @property (nonatomic, strong) NSDate *birthday;
 
