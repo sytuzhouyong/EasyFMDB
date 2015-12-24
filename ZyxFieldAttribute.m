@@ -23,37 +23,37 @@
 
 @implementation ZyxDataType
 
-+ (NSNumber *)numberWithDateType:(EDataType)dt {
++ (NSNumber *)numberWithDateType:(ZyxFieldType)dt {
     return [NSNumber numberWithInt:dt];
 }
 + (NSNumber *)boolType {
-    return [ZyxDataType numberWithDateType:DT_BOOL];
+    return [ZyxDataType numberWithDateType:ZyxFieldTypeBOOL];
 }
 + (NSNumber *)stringType {
-    return [ZyxDataType numberWithDateType:DT_NSString];
+    return [ZyxDataType numberWithDateType:ZyxFieldTypeNSString];
 }
 + (NSNumber *)integerType {
-    return [ZyxDataType numberWithDateType:DT_NSInteger];
+    return [ZyxDataType numberWithDateType:ZyxFieldTypeNSInteger];
 }
 + (NSNumber *)uintegerType {
-    return [ZyxDataType numberWithDateType:DT_NSUInteger];
+    return [ZyxDataType numberWithDateType:ZyxFieldTypeNSUInteger];
 }
 + (NSNumber *)doubleType {
-    return [ZyxDataType numberWithDateType:DT_CGFloat];
+    return [ZyxDataType numberWithDateType:ZyxFieldTypeCGFloat];
 }
 + (NSNumber *)dateType {
-    return [ZyxDataType numberWithDateType:DT_NSDate];
+    return [ZyxDataType numberWithDateType:ZyxFieldTypeNSDate];
 }
 
-+ (NSString *)stringWithDataType:(EDataType)type {
++ (NSString *)stringWithDataType:(ZyxFieldType)type {
     switch (type) {
-        case DT_BOOL:                   return @"bool";
-        case DT_NSInteger:              return @"integer";
-        case DT_NSUInteger:             return @"integer unsigned";
-        case DT_CGFloat:                return @"double";
-        case DT_NSString:               return @"text";
-        case DT_NSDate:                 return @"date";
-        case DT_ZyxBaseModel:           return @"integer unsigned";
+        case ZyxFieldTypeBOOL:                   return @"bool";
+        case ZyxFieldTypeNSInteger:              return @"integer";
+        case ZyxFieldTypeNSUInteger:             return @"integer unsigned";
+        case ZyxFieldTypeCGFloat:                return @"double";
+        case ZyxFieldTypeNSString:               return @"text";
+        case ZyxFieldTypeNSDate:                 return @"date";
+        case ZyxFieldTypeBaseModel:           return @"integer unsigned";
         default: {
             NSLog(@"oh no, unrecognized data type : %lu", (unsigned long)type);
             return @"";

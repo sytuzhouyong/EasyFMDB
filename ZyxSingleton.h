@@ -41,7 +41,6 @@
         static __class__ *sharedSingleton_ = nil;                                       \
         static dispatch_once_t predicate;                                               \
         dispatch_once(&predicate, ^{                                                    \
-            NSLog(@"%@ init", NSStringFromClass(self.class));                           \
             sharedSingleton_ = [[__class__ alloc] init];                                \
         });                                                                             \
         return sharedSingleton_;                                                        \
@@ -54,7 +53,6 @@
         static __class__ *sharedSingleton_ = nil;                                       \
         static dispatch_once_t predicate;                                               \
         dispatch_once(&predicate, ^{                                                    \
-            NSLog(@"%@ init", NSStringFromClass(self.class));                           \
             sharedSingleton_ = [[__class__ alloc] init];                                \
             [sharedSingleton_ __m__];                                                   \
         });                                                                             \

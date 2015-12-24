@@ -7,3 +7,4 @@
 //
 
 #import "ZyxFMDBManager.h"
+#import "ZyxBaseModel.h"

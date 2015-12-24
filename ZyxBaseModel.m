@@ -11,6 +11,7 @@
 #import "ZyxTypedef.h"
 #import "ZyxMacro.h"
 #import "ZyxFieldAttribute.h"
+#import "ZyxFMDBManager.h"
 
 @implementation ZyxBaseModel {
     NSMutableArray *_updatedProperties;
@@ -103,6 +104,21 @@
         
         [_watchedKeys removeAllObjects];
     }
+}
+
+#pragma mark - Common database operation methods
+
+- (BOOL)save {
+    return [[ZyxFMDBManager sharedInstance] save:self];
+}
+- (BOOL)delete {
+    return [[ZyxFMDBManager sharedInstance] delete:self];
+}
+- (BOOL)update {
+    return [[ZyxFMDBManager sharedInstance] update:self];
+}
+- (NSArray *)query {
+    return [[ZyxFMDBManager sharedInstance] query:self];
 }
 
 #pragma mark - Property Dictionary
@@ -226,7 +242,7 @@
             p.name = propertyName;
             p.nameInDB = [self propertyNameToDBName:propertyName isBaseModel:isBaseModel];
             p.className = isBaseModel ? typeString : @"";
-            p.type = isBaseModel ? DT_ZyxBaseModel : [self dataTypeWithString:typeString];
+            p.type = isBaseModel ? ZyxFieldTypeBaseModel : [self dataTypeWithString:typeString];
             p.isBaseModel = isBaseModel;
             [props setObject:p forKey:propertyName];
         }
@@ -306,19 +322,19 @@
 
 #pragma mark -
 
-+ (EDataType)dataTypeWithString:(NSString *)typeString {
++ (ZyxFieldType)dataTypeWithString:(NSString *)typeString {
 //    NSLog(@"type string : %@", typeString);
     const char *str = typeString.UTF8String;
     
-    if (strcmp(str, @encode(BOOL)) == 0)            return DT_BOOL;
-    if (strcmp(str, @encode(NSInteger)) == 0)       return DT_NSInteger;
-    if (strcmp(str, @encode(NSUInteger)) == 0)      return DT_NSUInteger;
-    if (strcmp(str, @encode(CGFloat)) == 0)         return DT_CGFloat;
-    if (strcmp(str, @"NSDate".UTF8String) == 0)     return DT_NSDate;
-    if (strcmp(str, @"NSString".UTF8String) == 0)   return DT_NSString;
+    if (strcmp(str, @encode(BOOL)) == 0)            return ZyxFieldTypeBOOL;
+    if (strcmp(str, @encode(NSInteger)) == 0)       return ZyxFieldTypeNSInteger;
+    if (strcmp(str, @encode(NSUInteger)) == 0)      return ZyxFieldTypeNSUInteger;
+    if (strcmp(str, @encode(CGFloat)) == 0)         return ZyxFieldTypeCGFloat;
+    if (strcmp(str, @"NSDate".UTF8String) == 0)     return ZyxFieldTypeNSDate;
+    if (strcmp(str, @"NSString".UTF8String) == 0)   return ZyxFieldTypeNSString;
     
     LogWarning(@"oh no, unrecognized data type : %s", str);
-    return DT_Unkonw;
+    return ZyxFieldTypeUnkonw;
 }
 
 #pragma mark - dealloc
@@ -374,7 +390,6 @@
 //    
 //    return self;
 //}
-
 
 @end
 

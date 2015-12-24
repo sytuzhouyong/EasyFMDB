@@ -56,31 +56,34 @@
 
 - (void)clearTable {
     NSValue *value = [NSValue valueWithPointer:(__bridge const void *)(ZyxContact.class)];
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Delete withParam:value];
+    [self.dbManager delete:value withCompletion:^(BOOL success) {
+        XCTAssertTrue(success, @"clearTable failed");
+    }];
 }
 
 // 1
 - (void)test00_DeleteAllModelsInTable {
     NSValue *value = [NSValue valueWithPointer:(__bridge const void *)(ZyxContact.class)];
-    NSDictionary *dict = @{kEasyFMDBModel:value, kEasyFMDBBlock:^(BOOL success) {
+    NSDictionary *dict = @{kEasyFMDBModel:value};
+    [self.dbManager delete:dict withCompletion:^(BOOL success) {
         XCTAssertTrue(success);
-    }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Delete withParam:dict];
+    }];
 }
 
 // 2
 - (void)test10_AddModel {
     ZyxContact *contact = [self contact];
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Add withParam:contact];
+//    [self.dbManager save:contact withCompletion:nil];
+    BOOL result = [contact save];
+    XCTAssertTrue(result);
     
     ZyxContact *model = [[ZyxContact alloc] init];
     model.age = 1;
-    NSDictionary *dict = @{kEasyFMDBModel:model, kEasyFMDBBlock:^(BOOL success, NSArray *models){
-        XCTAssertEqual(models.count, 1);
-        ZyxContact *item = models.firstObject;
-        XCTAssert([item.name isEqualToString:@"name_1"]);
-    }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict];
+    
+    NSArray *models = [model query];
+    XCTAssertEqual(models.count, 1);
+    ZyxContact *item = models.firstObject;
+    XCTAssert([item.name isEqualToString:@"name_1"]);
 }
 
 // 3
@@ -92,25 +95,25 @@
         [contacts addObject:[self contact]];
     }
     
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Add withParam:contacts];
+    [self.dbManager save:contacts withCompletion:^(BOOL success) {
+        XCTAssertTrue(success);
+    }];
     
     ZyxContact *model = [[ZyxContact alloc] init];
     NSDictionary *dict = @{kEasyFMDBModel:model,
-                           kEasyFMDBPropertiesValues:@{@"name": @[@"name_14", @"name_15"]},
-                           kEasyFMDBBlock:^(BOOL success, NSArray *models){
-                               XCTAssertEqual(models.count, 2);
-                           }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict];
+                           kEasyFMDBPropertiesValues:@{@"name": @[@"name_14", @"name_15"]}
+                           };
+    [self.dbManager query:dict withCompletion:^(BOOL success, NSArray *models) {
+        XCTAssertEqual(models.count, 2);
+    }];
 }
 
 // select * from T_ZyxContact where age = 10
 - (void)test20_QueryModelByProperty {
     ZyxContact *model = [[ZyxContact alloc] init];
     model.age = 10;
-    NSDictionary *dict = @{kEasyFMDBModel:model, kEasyFMDBBlock:^(BOOL success, NSArray *models){
-        XCTAssertEqual(models.count, 1);
-    }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict];
+    NSArray *models = [model query];
+    XCTAssertEqual(models.count, 1);
 }
 
 // select * from T_ZyxContact where age = 10 or/and name = 'name_10'
@@ -119,11 +122,11 @@
     model.age = 10;
     model.name = @"name_10";
     NSDictionary *dict = @{kEasyFMDBModel:model,
-                           kEasyFMDBLogics:@(LR_Or),    // if don't have this key-value，it will be LR_And
-                           kEasyFMDBBlock:^(BOOL success, NSArray *models){
-                               XCTAssertEqual(models.count, 1);
-                           }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict];
+                           kEasyFMDBLogics:@(ZyxLogicRelationshipTypeOr),    // if don't have this key-value，it will be ZyxLogicRelationshipTypeAnd
+                           };
+    [self.dbManager query:dict withCompletion:^(BOOL success, NSArray *models) {
+        XCTAssertEqual(models.count, 1);
+    }];
 }
 
 // select * from T_ZyxContact where name = 'name_10' or 'name = name_8'
@@ -134,11 +137,11 @@
     
     NSDictionary *dict = @{kEasyFMDBModel:model,
                            kEasyFMDBPropertiesValues:@{@"name":@[@"name_10", @"name_8"]},
-                           kEasyFMDBMatches:@[@(DCT_NotEqual), @[@(DCT_Equal), @(DCT_NotEqual)]],
-                           kEasyFMDBBlock:^(BOOL success, NSArray *models){
-                               XCTAssertTrue(models.count != 0);
-                           }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict];
+                           kEasyFMDBMatches:@[@(ZyxCompareTypeNotEqual), @[@(ZyxCompareTypeEqual), @(ZyxCompareTypeNotEqual)]],
+                           };
+    [self.dbManager query:dict withCompletion:^(BOOL success, NSArray *models) {
+        XCTAssertTrue(models.count != 0);
+    }];
 }
 
 // select * from T_ZyxContact where home_address like '%1%' and name  = 'name_13' and work_address like '%work%' and mobile_phone like '%phone%' and (age != 10 or age = 8)
@@ -151,14 +154,14 @@
     
     NSDictionary *dict = @{kEasyFMDBModel:model,
                            kEasyFMDBPropertiesValues:@{@"age":@[@"10", @"8"]},
-                           kEasyFMDBMatches:@[@(DCT_Like), @(DCT_Equal), @(DCT_Like), @(DCT_Like), @[@(DCT_NotEqual), @(DCT_Equal)]],
-                           kEasyFMDBBlock:^(BOOL success, NSArray *models){
-                               XCTAssertTrue(models.count == 1);
-                           }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict];
+                           kEasyFMDBMatches:@[@(ZyxCompareTypeLike), @(ZyxCompareTypeEqual), @(ZyxCompareTypeLike), @(ZyxCompareTypeLike), @[@(ZyxCompareTypeNotEqual), @(ZyxCompareTypeEqual)]],
+                           };
+    [self.dbManager query:dict withCompletion:^(BOOL success, NSArray *models) {
+        XCTAssertTrue(models.count == 1);
+    }];
 }
 
-// LR_And: intersection, LR_Or: union
+// ZyxLogicRelationshipTypeAnd: intersection, ZyxLogicRelationshipTypeOr: union
 // select * from T_ZyxContact where home_address like '%1%' and name  = 'name_13' or work_address like '%work%' and mobile_phone like '%phone%'
 - (void)test24_QueryModelByMultiPropertiesAndMatchesAndLogics {
     ZyxContact *model = [[ZyxContact alloc] init];
@@ -168,22 +171,32 @@
     model.mobilePhone = @"phone";
     
     NSDictionary *dict = @{kEasyFMDBModel:model,
-                           kEasyFMDBMatches:@[@(DCT_Like), @(DCT_Equal), @(DCT_Like), @(DCT_Like)],
-                           kEasyFMDBLogics:@[@(LR_And), @(LR_Or)],
-                           kEasyFMDBBlock:^(BOOL success, NSArray *models){
-                               XCTAssertTrue(models.count > 0);
-                           }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict];
+                           kEasyFMDBMatches:@[@(ZyxCompareTypeLike), @(ZyxCompareTypeEqual), @(ZyxCompareTypeLike), @(ZyxCompareTypeLike)],
+                           kEasyFMDBLogics:@[@(ZyxLogicRelationshipTypeAnd), @(ZyxLogicRelationshipTypeOr)],
+                           };
+    [self.dbManager query:dict withCompletion:^(BOOL success, NSArray *models) {
+        XCTAssertTrue(models.count > 0);
+    }];
 }
 
 // queryAll sql: select * from T_ZyxContact order by name desc
 - (void)test25_QueryAllModels {
     NSDictionary *dict = @{kEasyFMDBModel:[NSValue valueWithPointer: (__bridge const void *)(ZyxContact.class)],
-                           kEasyFMDBOrders:@{@"name": @"desc"},
-                           kEasyFMDBBlock:^(BOOL success, NSArray *models){
-                               XCTAssertTrue(models.count > 0);
-                           }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict];
+                           kEasyFMDBOrders:@{@"id": @"asc"},
+                           };
+    [self.dbManager query:dict withCompletion:^(BOOL success, NSArray *models) {
+        XCTAssertTrue(models.count > 0);
+    }];
+}
+
+- (void)test26_QueryModeById {
+    ZyxContact *model = [[ZyxContact alloc] init];
+    model.id = 3;
+    
+    NSArray *models = [model query];
+    XCTAssertEqual(models.count, 1);
+    ZyxContact *contact = models.firstObject;
+    XCTAssertTrue(contact.id == 3);
 }
 
 // update T_ZyxContact set name='name_6_' where id = 2
@@ -191,16 +204,8 @@
     ZyxContact *contact = [[ZyxContact alloc] init];
     contact.id = 2;
     contact.name = @"name_2_2";
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Update withParam:contact];
-    
-    ZyxContact *model = [[ZyxContact alloc] init];
-    model.id = 2;
-    NSDictionary *dict = @{kEasyFMDBModel:model, kEasyFMDBBlock:^(BOOL success, NSArray *models){
-        XCTAssertEqual(models.count, 1);
-        ZyxContact *contact = models.firstObject;
-        XCTAssertTrue([contact.name isEqualToString:@"name_2_2"]);
-    }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict];
+    BOOL result = [contact update];
+    XCTAssertTrue(result);
 }
 
 // update T_ZyxContact set name='name_6_' where home_address = 'home_address_6'
@@ -214,16 +219,17 @@
                            kEasyFMDBBlock:^(BOOL success) {
                                XCTAssertTrue(success);
                            }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Update withParam:dict];
+    [self.dbManager update:dict withCompletion:^(BOOL success) {
+        XCTAssertTrue(success);
+    }];
     
     ZyxContact *model = [[ZyxContact alloc] init];
     model.homeAddress = @"home_address_6";
-    NSDictionary *dict2 = @{kEasyFMDBModel:model, kEasyFMDBBlock:^(BOOL success, NSArray *models){
-        XCTAssertEqual(models.count, 1);
-        ZyxContact *contact = models.firstObject;
-        XCTAssertTrue([contact.name isEqualToString:@"name_6_"]);
-    }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Query withParam:dict2];
+    
+    NSArray *models = [model query];
+    XCTAssertEqual(models.count, 1);
+    contact = models.firstObject;
+    XCTAssertTrue([contact.name isEqualToString:@"name_6_"]);
 }
 
 // update T_ZyxContact set name='name_6_6', home_address = 'home_address_6' where id = 17
@@ -232,11 +238,8 @@
     contact.id = 17;
     contact.homeAddress = @"home_address_xxxxx";
     contact.name = @"name_6_6";
-    NSDictionary *dict = @{kEasyFMDBModel:contact,
-                           kEasyFMDBBlock:^(BOOL success) {
-                               XCTAssertTrue(success);
-                           }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Update withParam:dict];
+    BOOL result = [contact update];
+    XCTAssertTrue(result);
 }
 
 // update T_ZyxContact set home_address ='home_address_6' where name='name_6_6'
@@ -247,10 +250,10 @@
     NSDictionary *dict = @{kEasyFMDBModel:contact,
                            kEasyFMDBQueryProperties:@"name",
                            kEasyFMDBUpdateProperties:@"homeAddress",
-                           kEasyFMDBBlock:^(BOOL success) {
-                               XCTAssertTrue(success);
-                           }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Update withParam:dict];
+                           };
+    [self.dbManager update:dict withCompletion:^(BOOL success) {
+        XCTAssertTrue(success);
+    }];
 }
 
 // update T_ZyxContact set home_address = 'home_address_xxxxx', name='name_6_6' where id = 10 or id = 11 or id = 12;
@@ -260,10 +263,10 @@
     contact.name = @"name_6_6";
     NSDictionary *dict = @{kEasyFMDBModel:contact,
                            kEasyFMDBQueryPropertiesAndValues:@{@"id":@[@(10), @(11), @(12)]},
-                           kEasyFMDBBlock:^(BOOL success) {
-                               XCTAssertTrue(success);
-                           }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Update withParam:dict];
+                           };
+    [self.dbManager update:dict withCompletion:^(BOOL success) {
+        XCTAssertTrue(success);
+    }];
 }
 
 // update T_ZyxContact set work_address = work_address_xxxxx, mobile_phone = mobile_phone_xxxxx
@@ -277,10 +280,10 @@
                            kEasyFMDBQueryProperties:@"name",
                            kEasyFMDBQueryPropertiesAndValues:@{@"id":@[@(10), @(11), @(12)]},
                            kEasyFMDBUpdateProperties:@[@"workAddress", @"mobilePhone"],
-                           kEasyFMDBBlock:^(BOOL success) {
-                               XCTAssertTrue(success);
-                           }};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Update withParam:dict];
+                           };
+    [self.dbManager update:dict withCompletion:^(BOOL success) {
+        XCTAssertTrue(success);
+    }];
 }
 
 // update T_ZyxContact set work_address = work_address_8 where work_address = work_address_7
@@ -288,8 +291,11 @@
     ZyxContact *contact = [[ZyxContact alloc] init];
     contact.workAddress = @"work_address_8";
     NSDictionary *dict = @{kEasyFMDBModel:contact,
-                           kEasyFMDBQueryPropertiesAndValues:@{@"workAddress":@"work_address_7"}};
-    [self.dbManager callCapabilityType:EasyFMDBCapabilityType_Update withParam:dict];
+                           kEasyFMDBQueryPropertiesAndValues:@{@"workAddress":@"work_address_7"}
+                           };
+    [self.dbManager update:dict withCompletion:^(BOOL success) {
+        XCTAssertTrue(success);
+    }];
 }
 
 - (void)test40_OneToOneRelationship {
@@ -302,16 +308,14 @@
     student.xxx = 20;
     student.heavy = 56.1;
     student.teacher = teacher;
-    [[ZyxFMDBManager sharedInstance] callCapabilityType:EasyFMDBCapabilityType_Add withParam:student];
+    [student save];
     XCTAssertTrue(teacher.id > 0 && student.id > 0);
-    
-    DBQueryOperationResultBlock block = ^(BOOL success, NSArray *result) {
-        Student *student = result.firstObject;
-        NSLog(@"teach name = %@", student.teacher.name);
-        XCTAssertTrue([student.teacher.name isEqualToString:teacher.name]);
-    };
+
     // select * from T_Student where (age = 10) and (xxx = 20) and (heavy = 56.1) and (teacher_id = 3) and (id = 3)
-    [[ZyxFMDBManager sharedInstance] callCapabilityType:EasyFMDBCapabilityType_Query withParam:@{@"model":student, @"block": block}];
+    NSArray *modes = [student query];
+    student = modes.firstObject;
+    NSLog(@"teach name = %@", student.teacher.name);
+    XCTAssertTrue([student.teacher.name isEqualToString:teacher.name]);
 }
 
 - (void)testExample {

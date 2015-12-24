@@ -26,12 +26,20 @@
 
 @property (nonatomic, assign) NSUInteger id;     // autoincreasement
 
-/// subclass needs to call this method
+/// subclass of ZyxBaseModel needs to override this method
 + (void)registeModel:(Class)clazz;
 + (NSMutableSet *)registedModels;
 
 - (id)initWithObserverEnabledFlag:(BOOL)isObserverEnable;
 - (void)setObserverEnabled:(BOOL)enabled;
+
+
+/// common database operation method
+- (BOOL)save;
+- (BOOL)delete;
+- (BOOL)update;
+- (NSArray *)query;
+
 
 // key: property name  value: ZyxFieldAttribute object
 /// all property info that predicateProperty: method return YES

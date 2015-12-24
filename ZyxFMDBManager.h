@@ -10,12 +10,23 @@
 #import "ZyxSingleton.h"
 #import "ZyxTypedef.h"
 
+@class ZyxBaseModel;
+
 @interface ZyxFMDBManager : NSObject
 
 SINGLETON_DECLEAR;
 
 // Documents/subDirectory/xx.db
 - (void)createDBFileAtSubDirectory:(NSString *)subDirectory;
-- (void)callCapabilityType:(EEasyFMDBCapabilityType)capabilityType withParam:(id)inParam;
+
+- (void)save:(id)model withCompletion:(DBUpdateOperationResultBlock)block;
+- (void)delete:(id)model withCompletion:(DBUpdateOperationResultBlock)block;
+- (void)update:(id)model withCompletion:(DBUpdateOperationResultBlock)block;
+- (void)query:(id)model withCompletion:(DBQueryOperationResultBlock)block;
+
+- (BOOL)save:(ZyxBaseModel *)model;
+- (BOOL)delete:(ZyxBaseModel *)model;
+- (BOOL)update:(ZyxBaseModel *)model;
+- (NSArray<ZyxBaseModel *> *)query:(ZyxBaseModel *)model;
 
 @end

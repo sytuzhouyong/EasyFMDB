@@ -18,13 +18,13 @@
 + (NSNumber *)stringType;
 + (NSNumber *)dateType;
 
-+ (NSString *)stringWithDataType:(EDataType)type;
++ (NSString *)stringWithDataType:(ZyxFieldType)type;
 
 @end
 
 @interface ZyxFieldAttribute : NSObject
 
-@property (nonatomic, assign) EDataType type;       // data type of property
+@property (nonatomic, assign) ZyxFieldType type;       // data type of property
 @property (nonatomic, copy) NSString *name;         // proper name
 @property (nonatomic, copy) NSString *className;    // class name
 @property (nonatomic, copy) NSString *nameInDB;     // related column name in db
