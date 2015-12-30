@@ -19,11 +19,13 @@ SINGLETON_DECLEAR;
 // Documents/subDirectory/xx.db
 - (void)createDBFileAtSubDirectory:(NSString *)subDirectory;
 
+// complex interface
 - (void)save:(id)model withCompletion:(DBUpdateOperationResultBlock)block;
 - (void)delete:(id)model withCompletion:(DBUpdateOperationResultBlock)block;
 - (void)update:(id)model withCompletion:(DBUpdateOperationResultBlock)block;
 - (void)query:(id)model withCompletion:(DBQueryOperationResultBlock)block;
 
+// simple interface
 - (BOOL)save:(ZyxBaseModel *)model;
 - (BOOL)delete:(ZyxBaseModel *)model;
 - (BOOL)update:(ZyxBaseModel *)model;
