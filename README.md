@@ -147,7 +147,7 @@ a easy way to use fmdb
 
 1.1.0版本主要更新：
 --------
-####1 支持简单的一对一关系模型，模型代码看起来像这样：
+####1. 支持简单的一对一关系模型，模型代码看起来像这样：
 
 	@interface Teacher : ZyxBaseModel
 	
@@ -168,4 +168,15 @@ a easy way to use fmdb
 * 如果查询操作中有关联对象，那么只有关联对象的id有效果，其余属性暂时不起作用，这个功能后面版本再完善，测试代码可以见 Tests/TestEasyFMDBTests.m 中的方法test40_OneToOneRelationship
 
 * 基本数据类型暂时不再支持int, long, float 等，需要转化成NSInteger, CGFloat类型
+
+
+##2.0.0版本主要更新：
+####1. 简化接口名称，老接口已经移除
+`ZyxBaseModel`直接提供数据库基本操作接口，但是功能没有直接调用ZyxFMDBManager强大。
+详细接口请见测试用例
+
+####2. 提供数据库操作的同步方法，复杂功能还没有支持，下个版本会增加
+详细接口请见测试用例
+
+
 
