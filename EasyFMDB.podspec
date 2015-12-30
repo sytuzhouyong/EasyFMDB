@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
   s.summary      = "EasyFMDB provides a way of object oriented to use FMDB."
 
   s.description  = <<-DESC
-                   now, EasyFMDB supports one-to-one map relationship.
+                   EasyFMDB provides more simple interface to operate FMDB, more object oriented than before.
                    DESC
 
   s.homepage     = "https://github.com/sytuzhouyong/EasyFMDB"
@@ -48,9 +48,9 @@ Pod::Spec.new do |s|
   #  profile URL.
   #
 
-  s.author             = { "sytuzhouyong" => "308872563@qq.com" }
-  # Or just: s.author    = "sytuzhouyong"
-  # s.authors            = { "sytuzhouyong" => "308872563@qq.com" }
+  s.author             = { "zhouyong" => "308872563@qq.com" }
+  # Or just: s.author    = "zhouyong"
+  # s.authors            = { "zhouyong" => "308872563@qq.com" }
   # s.social_media_url   = "http://twitter.com/zhouyong"
 
   # ――― Platform Specifics ――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
