@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "EasyFMDB"
-  s.version      = "1.1.0"
+  s.version      = "2.0.0"
   s.summary      = "EasyFMDB provides a way of object oriented to use FMDB."
 
   s.description  = <<-DESC
@@ -48,9 +48,9 @@ Pod::Spec.new do |s|
   #  profile URL.
   #
 
-  s.author             = { "zhouyong" => "308872563@qq.com" }
-  # Or just: s.author    = "zhouyong"
-  # s.authors            = { "zhouyong" => "308872563@qq.com" }
+  s.author             = { "sytuzhouyong" => "308872563@qq.com" }
+  # Or just: s.author    = "sytuzhouyong"
+  # s.authors            = { "sytuzhouyong" => "308872563@qq.com" }
   # s.social_media_url   = "http://twitter.com/zhouyong"
 
   # ――― Platform Specifics ――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
@@ -73,7 +73,7 @@ Pod::Spec.new do |s|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  s.source       = { :git => "https://github.com/sytuzhouyong/EasyFMDB.git", :tag => "1.1.0" }
+  s.source       = { :git => "https://github.com/sytuzhouyong/EasyFMDB.git", :tag => "2.0.0" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
