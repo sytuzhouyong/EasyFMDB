@@ -130,7 +130,7 @@
 }
 
 // select * from T_ZyxContact where name = 'name_10' or 'name = name_8'
-// kEasyFMDBMatches 的顺序：先属性中设置的，然后再是dict中设置的
+// kEasyFMDBMatches 的顺序：先读取属性中设置的，然后再读取dict中设置的
 - (void)test22_QueryModelByPropertyWithMultiValues {
     ZyxContact *model = [[ZyxContact alloc] init];
     model.age = 10;
