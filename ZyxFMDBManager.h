@@ -16,8 +16,8 @@
 
 SINGLETON_DECLEAR;
 
-// Documents/subDirectory/xx.db
-- (void)createDBFileAtSubDirectory:(NSString *)subDirectory;
+// /Documents/name.db
+- (void)createDBWithName:(NSString *)name;
 
 // complex interface
 - (void)save:(id)model withCompletion:(DBUpdateOperationResultBlock)block;

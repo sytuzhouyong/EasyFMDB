@@ -15,10 +15,9 @@
 
 @implementation ZyxBaseModel {
     NSMutableArray *_updatedProperties;
-    NSMutableArray *_updatedValues;
     NSMutableArray *_updatedPropertiesExceptId;
-    NSMutableArray *_updatedValuesExceptId;
     NSMutableArray *_watchedKeys;
+    NSMutableSet *_updatedPropertiesSet;
     BOOL _isObserverEnabled;
 }
 
@@ -36,10 +35,11 @@
     return registedModels;
 }
 
-#pragma mark - Init
-
-+ (void)load {
++ (NSArray *)ignoredProperties {
+    return nil;
 }
+
+#pragma mark - Init
 
 - (id)init {
     return [self initWithObserverEnabledFlag:YES];
@@ -49,9 +49,8 @@
     if (self = [super init]) {
         _isObserverEnabled = isObserverEnable;
         _updatedProperties = [[NSMutableArray alloc] init];
-        _updatedValues = [[NSMutableArray alloc] init];
         _updatedPropertiesExceptId = [[NSMutableArray alloc] init];
-        _updatedValuesExceptId = [[NSMutableArray alloc] init];
+        _updatedPropertiesSet = [NSMutableSet set];
         _watchedKeys = [[NSMutableArray alloc] init];
         
         if (isObserverEnable) {
@@ -74,7 +73,7 @@
 - (void)addWatchKeys {
     NSDictionary *properties = [self.class propertiesDictionary];
     [properties.allKeys enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL *stop) {
-        if ([self.class predicateProperty:obj]) {
+        if (![[self.class ignoredProperties] containsObject:obj]) {
             [self addObserver:self forKeyPath:obj options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
             [_watchedKeys addObject:obj];
         }
@@ -82,15 +81,16 @@
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    id newValue = [change objectForKey:@"new"];
-    if (newValue != nil && ![newValue isKindOfClass:NSNull.class]) {
+//    id newValue = [change objectForKey:@"new"];
+//    if (newValue != nil && ![newValue isKindOfClass:NSNull.class]) {
+    if (![_updatedPropertiesSet containsObject:keyPath]) {
+        [_updatedPropertiesSet addObject:keyPath];
         [_updatedProperties addObject:keyPath];
-        [_updatedValues addObject:newValue];
         if (![keyPath isEqualToString:@"id"]) {
             [_updatedPropertiesExceptId addObject:keyPath];
-            [_updatedValuesExceptId addObject:newValue];
         }
     }
+//    }
 }
 
 - (void)setObserverEnabled:(BOOL)enabled {
@@ -98,10 +98,8 @@
         [self addWatchKeys];
     } else {
         [_updatedProperties removeAllObjects];
-        [_updatedValues removeAllObjects];
         [_updatedPropertiesExceptId removeAllObjects];
-        [_updatedValuesExceptId removeAllObjects];
-        
+        [_updatedPropertiesSet removeAllObjects];
         [_watchedKeys removeAllObjects];
     }
 }
@@ -144,19 +142,21 @@
     return _updatedProperties;
 }
 - (NSArray *)updatedValues {
-    return _updatedValues;
+    NSMutableArray *values = [NSMutableArray array];
+    for (NSString *key in _updatedProperties) {
+        [values addObject:[self valueForKey:key]];
+    }
+    return values;
 }
 - (NSArray *)updatedPropertiesExceptId {
     return _updatedPropertiesExceptId;
 }
 - (NSArray *)updatedValuesExceptId {
-    return _updatedValuesExceptId;
-}
-
-#pragma mark - ZyxBaseModelProtocol
-
-+ (BOOL)predicateProperty:(NSString *)name {
-    return ![name hasPrefix:@"_"];
+    NSMutableArray *values = [NSMutableArray array];
+    for (NSString *key in _updatedPropertiesExceptId) {
+        [values addObject:[self valueForKey:key]];
+    }
+    return values;
 }
 
 #pragma mark - Util Function
@@ -212,9 +212,8 @@
             // name
             const char *char_name = property_getName(property);
             NSString *propertyName = [NSString stringWithUTF8String:char_name];
-            
             // ingore invalid property
-            if (![self.class predicateProperty:propertyName]) {
+            if ([[self.class ignoredProperties] containsObject:propertyName]) {
                 continue;
             }
             
@@ -244,7 +243,7 @@
             p.className = isBaseModel ? typeString : @"";
             p.type = isBaseModel ? ZyxFieldTypeBaseModel : [self dataTypeWithString:typeString];
             p.isBaseModel = isBaseModel;
-            [props setObject:p forKey:propertyName];
+            props[propertyName] = p;
         }
         
         c = class_getSuperclass(c);
@@ -269,12 +268,14 @@
         objc_property_t *properties = class_copyPropertyList(c, &outCount);
         for (unsigned int i = 0; i<outCount; i++) {
             objc_property_t property = properties[i];
-        
-            // name
+            
             const char *char_name = property_getName(property);
             NSString *propertyName = [NSString stringWithUTF8String:char_name];
+            if ([[c ignoredProperties] containsObject:propertyName]) {
+                continue;
+            }
             
-            ZyxFieldAttribute *p = [propertyDict objectForKey:propertyName];
+            ZyxFieldAttribute *p = propertyDict[propertyName];
             [array addObject:p];
         }
         
@@ -311,6 +312,11 @@
     NSMutableString *propertyName = [NSMutableString stringWithString:elements.firstObject];
     if (elements.count < 2) {
         return propertyName;
+    }
+    
+    // 说明property是ZyxBaseModel类型
+    if ([dbName hasSuffix:@"_id"]) {
+        return [dbName substringToIndex:dbName.length - 3];
     }
     
     for (NSUInteger i=1; i<elements.count; i++) {

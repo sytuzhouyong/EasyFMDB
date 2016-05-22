@@ -11,8 +11,6 @@
 #import "ZyxFieldAttribute.h"
 #import "FMDB.h"
 
-#define DBNAME @"EasyFMDB.db"
-
 #define RANGE_SQL(__r) \
     __r.length == 0 ? @"" : [NSString stringWithFormat:@"limit %@ offset %@", @(__r.length), @(__r.location)]
 
@@ -30,9 +28,9 @@
 
 SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
 
-- (void)createDBFileAtSubDirectory:(NSString *)subDirectory {
+- (void)createDBWithName:(NSString *)name {
     @synchronized(self) {
-        NSString *dbPath = [ZyxFMDBManager dbPathWithSubDirectory:subDirectory];
+        NSString *dbPath = [ZyxFMDBManager dbPathWithName:name];
         self.dbPath = dbPath;
         
         if (_dbQueue == nil || _dbQueue.path.length == 0) {
@@ -75,12 +73,14 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
             if (![db executeUpdate:sql]) {
                 LogError(@"oh no, create table(%@) failed!", TABLE_NAME_C(clazz));
                 break;
+            } else {
+                LogInfo(@"yes, craete table(%@) success!", TABLE_NAME_C(clazz));
             }
         }
         
         [db close];
         
-        LogGreen(@"create table success!");
+        LogGreen(@"create tables success!");
         return;
     }
     while (NO);
@@ -370,7 +370,10 @@ queryPropertiesAndValues:(NSDictionary *)queries
 
 - (BOOL)update:(ZyxBaseModel *)model {
     FMDatabase *db = [FMDatabase databaseWithPath:_dbPath];
-    [db open];
+    if (![db open]) {
+        LogError(@"oh no, open database failed");
+        return NO;
+    }
     
     NSArray *array = [self makeUpdateSQL:model updateProperties:[model updatedPropertiesExceptId] queryProperties:@[@"id"] matches:nil logics:nil];
     NSString *sql = [array objectAtIndex:0];
@@ -1026,16 +1029,26 @@ queryPropertiesAndValues:(NSDictionary *)queries
     return orderSql;
 }
 
-+ (NSString *)dbPathWithSubDirectory:(NSString *)subDirectory {
-    NSString *documentDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    NSString* dbDirectory = [documentDir stringByAppendingPathComponent:subDirectory];
-    if (![[NSFileManager defaultManager] fileExistsAtPath:dbDirectory]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:dbDirectory
-                                  withIntermediateDirectories:YES
-                                                   attributes:nil
-                                                        error:NULL];
++ (NSString *)dbPathWithName:(NSString *)name {
+    NSString *dbName = [NSString stringWithFormat:@"%@.db", name];
+    
+    
+#if TARGET_OS_IPHONE
+    LogInfo(@"iPhone");
+    NSString *rootDir = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+    NSString *dbPath = [rootDir stringByAppendingPathComponent:dbName];
+#elif TARGET_OS_MAC
+    LogInfo(@"MacOS");
+    NSString *applicationSupport = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES).firstObject;
+    NSDictionary *infoDict = [NSBundle mainBundle].infoDictionary;
+    NSString *dbPath = [applicationSupport stringByAppendingPathComponent:infoDict[@"CFBundleIdentifier"]];
+    
+    if (![[NSFileManager defaultManager] fileExistsAtPath:dbPath]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:dbPath withIntermediateDirectories:YES attributes:nil error:NULL];
     }
-    NSString *dbPath = [dbDirectory stringByAppendingPathComponent:DBNAME];
+    dbPath = [dbPath stringByAppendingPathComponent:dbName];
+#endif
+    
     return dbPath;
 }
 

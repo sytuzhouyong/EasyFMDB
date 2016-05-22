@@ -32,7 +32,7 @@
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
     self.dbManager = [ZyxFMDBManager sharedInstance];
-    [self.dbManager createDBFileAtSubDirectory:@"test"];
+    [self.dbManager createDBWithName:@"test"];
 }
 
 - (void)tearDown {
