@@ -2,14 +2,15 @@ EasyFMDB
 ========
 a easy way to use FMDB
 
+[![Platforms](https://img.shields.io/badge/platform-macos%20%7C%20ios-brightgreen.svg)](https://swift.org/about/#platform-support)
 [![Build Status](https://travis-ci.org/sytuzhouyong/EasyFMDB.svg?branch=master)](https://travis-ci.org/sytuzhouyong/EasyFMDB)
 
 这是一个仿J2EE框架Hibernate并二次封装FMDB的一个上层数据库接口，想要达到的目的是：
 不论数据模型有多少，都只需要一套接口就能实现数据库的基本操作。
 
-目前代码的功能
+实现功能
 --------------
-   1. 实现数据库增、删、改、查的功能，局限在于每次操作只能作用于一张表。
+   1. 实现数据库增、删、改、查的功能。
    2. 能在程序运行的时候动态修改数据库表路径，目的是一个用户对应一张表。
    3. 在每次程序启动的时候能自动更新表中的字段，如果有新添加的属性就自动更新到表中。
       目前只能增加字段，不能删除字段。
