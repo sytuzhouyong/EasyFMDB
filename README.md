@@ -1,7 +1,8 @@
 EasyFMDB
 ========
-
 a easy way to use FMDB
+
+[![Build Status](https://travis-ci.org/sytuzhouyong/EasyFMDB.svg?branch=master)](https://travis-ci.org/sytuzhouyong/EasyFMDB)
 
 这是一个仿J2EE框架Hibernate并二次封装FMDB的一个上层数据库接口，想要达到的目的是：
 不论数据模型有多少，都只需要一套接口就能实现数据库的基本操作。
