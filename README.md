@@ -2,9 +2,11 @@ EasyFMDB
 ========
 a easy way to use FMDB
 
-[![Platforms](https://img.shields.io/badge/platform-macos%20%7C%20ios-brightgreen.svg)](https://swift.org/about/#platform-support)
-[![Language](https://img.shields.io/badge/language-ObjectiveC-brightgreen.svg)](https://swift.org/)
 [![Build Status](https://travis-ci.org/sytuzhouyong/EasyFMDB.svg?branch=master)](https://travis-ci.org/sytuzhouyong/EasyFMDB)
+[![Version](https://img.shields.io/badge/version-2.0.1-brightgreen.svg)](https://github.com/sytuzhouyong/EasyFMDB)
+[![Platforms](https://img.shields.io/badge/platform-macos%20%7C%20ios-brightgreen.svg)](https://github.com/sytuzhouyong/EasyFMDB)
+[![Language](https://img.shields.io/badge/language-ObjectiveC-brightgreen.svg)](https://github.com/sytuzhouyong/EasyFMDB)
+
 
 这是一个仿J2EE框架Hibernate并二次封装FMDB的一个上层数据库接口，想要达到的目的是：
 不论数据模型有多少，都只需要一套接口就能实现数据库的基本操作。
