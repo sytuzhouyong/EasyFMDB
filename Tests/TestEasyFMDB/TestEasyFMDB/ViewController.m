@@ -7,6 +7,8 @@
 //
 
 #import "ViewController.h"
+#import "ZyxBaseModel.h"
+
 
 @interface ViewController ()
 
@@ -23,5 +25,12 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+@end
+
+
+RegisteModel(TestModel)
+@implementation TestModel
+
 
 @end

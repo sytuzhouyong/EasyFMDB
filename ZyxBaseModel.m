@@ -13,6 +13,13 @@
 #import "ZyxFieldAttribute.h"
 #import "ZyxFMDBManager.h"
 
+#import <objc/runtime.h>
+#import <dlfcn.h>
+#import <mach-o/getsect.h>
+#import <mach-o/dyld.h>
+
+static NSArray<NSString *> * ReadConfiguration(char *section);
+
 @implementation ZyxBaseModel {
     NSMutableArray *_updatedProperties;
     NSMutableArray *_updatedPropertiesExceptId;
@@ -21,16 +28,13 @@
     BOOL _isObserverEnabled;
 }
 
-+ (void)registeModel:(Class)clazz {
-    NSMutableSet *registedModels = [self.class registedModels];
-    [registedModels addObject:NSStringFromClass(clazz)];
-}
-
-+ (NSMutableSet *)registedModels {
-    static NSMutableSet *registedModels = nil;
++ (NSSet *)registedModels {
+    static NSSet *registedModels = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        registedModels = [[NSMutableSet alloc] initWithCapacity:8];
+        NSArray<NSString *> *models = ReadConfiguration(kSegmentName);
+        registedModels = [NSSet setWithArray:models];
+        
     });
     return registedModels;
 }
@@ -72,12 +76,12 @@
 
 - (void)addWatchKeys {
     NSDictionary *properties = [self.class propertiesDictionary];
-    [properties.allKeys enumerateObjectsUsingBlock:^(NSString *obj, NSUInteger idx, BOOL *stop) {
+    for (NSString *obj in properties.allKeys) {
         if (![[self.class ignoredProperties] containsObject:obj]) {
             [self addObserver:self forKeyPath:obj options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
             [_watchedKeys addObject:obj];
         }
-    }];
+    }
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -400,3 +404,34 @@
 @end
 
 
+static NSArray<NSString *> * ReadConfiguration(char *section) {
+    NSMutableArray *configs = [NSMutableArray array];
+    
+    Dl_info info;
+    dladdr(ReadConfiguration, &info);
+    
+#ifndef __LP64__
+    // const struct mach_header *mhp = _dyld_get_image_header(0); // both works as below line
+    const struct mach_header *mhp = (struct mach_header *)info.dli_fbase;
+    unsigned long size = 0;
+    // 找到之前存储的数据段(Module找BeehiveMods段 和 Service找BeehiveServices段)的一片内存
+    uint32_t *memory = (uint32_t*)getsectiondata(mhp, "__DATA", section, &size);
+#else /* defined(__LP64__) */
+    const struct mach_header_64 *mhp = (struct mach_header_64 *)info.dli_fbase;
+    unsigned long size = 0;
+    uint64_t *memory = (uint64_t*)getsectiondata(mhp, "__DATA", section, &size); // memeory 指向的内容依旧是指针
+#endif /* defined(__LP64__) */
+    
+    // 把特殊段里面的数据都转换成字符串存入数组中
+    for (int idx = 0; idx < size/sizeof(void *); ++idx){
+        char *string = (char*)memory[idx];
+        NSString *str = [NSString stringWithUTF8String:string];
+        if (!str)
+            continue;
+        
+        NSLog(@"config = %@", str);
+        [configs addObject:str];
+    }
+    
+    return configs;
+}

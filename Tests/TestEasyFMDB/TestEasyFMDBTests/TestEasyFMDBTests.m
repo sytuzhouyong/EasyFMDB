@@ -9,9 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "EasyFMDB.h"
-#import "ZyxContact.h"
-#import "Teacher.h"
-#import "Student.h"
+#import "Models.h"
 
 @interface TestEasyFMDBTests : XCTestCase
 
@@ -21,18 +19,11 @@
 
 @implementation TestEasyFMDBTests
 
-- (id)init {
-    if (self = [super init]) {
-        
-    }
-    return self;
-}
-
 - (void)setUp {
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
     self.dbManager = [ZyxFMDBManager sharedInstance];
-    [self.dbManager createDBWithName:@"test"];
+    [self.dbManager createDBWithName:@"test" forceCreate:YES];
 }
 
 - (void)tearDown {
@@ -189,15 +180,15 @@
     }];
 }
 
-- (void)test26_QueryModeById {
-    ZyxContact *model = [[ZyxContact alloc] init];
-    model.id = 3;
-    
-    NSArray *models = [model query];
-    XCTAssertEqual(models.count, 1);
-    ZyxContact *contact = models.firstObject;
-    XCTAssertTrue(contact.id == 3);
-}
+//- (void)test26_QueryModeById {
+//    ZyxContact *model = [[ZyxContact alloc] init];
+//    model.id = 3;
+//
+//    NSArray *models = [model query];
+//    XCTAssertEqual(models.count, 1);
+//    ZyxContact *contact = models.firstObject;
+//    XCTAssertTrue(contact.id == 3);
+//}
 
 // update T_ZyxContact set name='name_6_' where id = 2
 - (void)test30_UpdateModelById {
@@ -331,3 +322,4 @@
 }
 
 @end
+

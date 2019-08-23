@@ -7,9 +7,20 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ZyxBaseModel.h"
 
 @interface ViewController : UIViewController
 
 
 @end
 
+
+
+
+@interface TestModel : ZyxBaseModel
+
+@property (nonatomic, assign) NSInteger age;
+@property (nonatomic, copy) NSString *name;
+@property (nonatomic, copy) NSString *address;
+
+@end

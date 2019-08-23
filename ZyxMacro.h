@@ -44,6 +44,7 @@
 #define TABLE_NAME(__m)                         TABLE_NAME_C(__m.class)
 #define TABLE_NAME_S(__n)                       [NSString stringWithFormat:@"T_%@", __n]
 
+
 #pragma mark - XCode Colors
 
 #define XCODE_COLORS_ESCAPE_MAC @"\033["
@@ -59,13 +60,20 @@
 #define XCODE_COLORS_RESET_BG   XCODE_COLORS_ESCAPE @"bg;" // Clear any background color
 #define XCODE_COLORS_RESET      XCODE_COLORS_ESCAPE @";"   // Clear any foreground or background color
 
-#define LogRed(frmt, ...)       NSLog((XCODE_COLORS_ESCAPE @"fg249,73,72;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
-#define LogGreen(frmt, ...)     NSLog((XCODE_COLORS_ESCAPE @"fg42,201,51;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
-#define LogYellow(frmt, ...)    NSLog((XCODE_COLORS_ESCAPE @"fg253,177,36;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
+#if 0
+    #define LogRed(frmt, ...)       NSLog((XCODE_COLORS_ESCAPE @"fg249,73,72;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
+    #define LogGreen(frmt, ...)     NSLog((XCODE_COLORS_ESCAPE @"fg42,201,51;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
+    #define LogYellow(frmt, ...)    NSLog((XCODE_COLORS_ESCAPE @"fg253,177,36;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
 
-#define LogError(frmt, ...)     LogRed(frmt, ##__VA_ARGS__)
-#define LogWarning(frmt, ...)   LogYellow(frmt, ##__VA_ARGS__)
-#define LogInfo(frmt, ...)      LogGreen(frmt, ##__VA_ARGS__)
+    #define LogError(frmt, ...)     LogRed(frmt, ##__VA_ARGS__)
+    #define LogWarning(frmt, ...)   LogYellow(frmt, ##__VA_ARGS__)
+    #define LogInfo(frmt, ...)      LogGreen(frmt, ##__VA_ARGS__)
+#else
+
+    #define LogError(frmt, ...)     NSLog(frmt, ##__VA_ARGS__)
+    #define LogWarning(frmt, ...)   NSLog(frmt, ##__VA_ARGS__)
+    #define LogInfo(frmt, ...)      NSLog(frmt, ##__VA_ARGS__)
+#endif
 
 #pragma mark - Time Tick
 

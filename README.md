@@ -11,18 +11,16 @@ a easy way to use FMDB
 这是一个仿J2EE框架Hibernate并二次封装FMDB的一个上层数据库接口，想要达到的目的是：
 不论数据模型有多少，都只需要一套接口就能实现数据库的基本操作。
 
-实现功能
---------------
+## 实现功能
    1. 实现数据库增、删、改、查的功能。
    2. 能在程序运行的时候动态修改数据库表路径，目的是一个用户对应一张表。
    3. 在每次程序启动的时候能自动更新表中的字段，如果有新添加的属性就自动更新到表中。
       目前只能增加字段，不能删除字段。
 
+--
 
-准备工作：
----------
-#### 1. 进入工程目录，运行pod install，安装依赖项目FMDB，打开workspace工程
-
+## 准备工作：
+#### 1. 进入工程根目录，运行pod install，安装依赖项目FMDB，打开workspace工程
 #### 2. 定义自己的model，看起来像下面的代码：
 	// ZyxContact.h
 	@interface ZyxContact : ZyxBaseModel
@@ -36,36 +34,31 @@ a easy way to use FMDB
 	@end
 	
 	// ZyxContact.m
+	RegisteModel(ZyxContact)
 	@implementation ZyxContact
-	
-	+ (void)load {
-	  [ZyxBaseModel registeModel:self.class];
-	}
 	
 	@end
 
-#### 3. 导入接口文件。
+#### 3. 导入头文件。
     #import "EasyFMDB.h"
 
-用例：
---------
+--
 
-##### 1. 插入数据
-      
+## 用例：
+### 1. 插入数据
     // 初始化除了id之外的属性
     ZyxContact *contact = [ZyxContact alloc] init];
     contact.name = @"zyx";
     [contact save];
     
-##### 2. 删除数据
+### 2. 删除数据
 
-###### a. 根据主键id删除
+#### a. 根据主键id删除
        ZyxContact *contact = [[ZyxContact alloc] init];
        contact.id = 30;
        [contact delete];
 
-###### b. 根据其他属性删除，另外可以增加条件，eg. 设置的属性是精确匹配还是模糊匹配，属性之间的关系是 `and`还是`or`。
-
+#### b. 根据其他属性删除，另外可以增加条件，eg. 设置的属性是精确匹配还是模糊匹配，属性之间的关系是 `and`还是`or`。
 	// select * from T_ZyxContact where age = 10 or name = 'name_10'
 	ZyxContact *model = [[ZyxContact alloc] init];
 	model.age = 10;
@@ -105,9 +98,9 @@ a easy way to use FMDB
    		XCTAssertTrue(success);
    	}];
       
-##### 3. 更新数据
+### 3. 更新数据
 
-###### a. 根据主键id修改
+#### a. 根据主键id修改
        // update T_ZyxContact set name='name_6_6', home_address = 'home_address_6' where id = 17
        ZyxContact *contact = [[ZyxContact alloc] init];
        contact.id = 17;
@@ -115,7 +108,7 @@ a easy way to use FMDB
        contact.name = @"name_6_6";
        [contact update];
     
-###### b. 根据其他属性选择更新的对象
+#### b. 根据其他属性选择更新的对象
 
        // update T_ZyxContact set home_address = 'home_address_6' where name = 'name_6_6'
        ZyxContact *contact = [[ZyxContact alloc] init];
@@ -131,13 +124,19 @@ a easy way to use FMDB
         	XCTAssertTrue(success);
         }];
 
-##### 4. 查询数据
+#### 4. 查询数据
    查询数据和删除功能中的查找部分代码类似，具体代码可以在 TestEasyFMDBTests.m 中找到。
-以上功能只是一部分代码，配合不同的参数基本可以实现对单表的任意操作。   
+   以上功能只是一部分代码，配合不同的参数基本可以实现对单表的任意操作。   
 
-<br />
+--
 
 # 版本更新历史
+
+### 2.0.1版本更新：
+#### 1. 去掉自定义`model`的`load`注册方式，改为编译时注册方式
+
+--
+
 ### 2.0.0版本主要更新：
 #### 1.简化接口名称，老接口已经移除
 `ZyxBaseModel`直接提供数据库基本操作接口，但是功能没有直接调用ZyxFMDBManager强大。
@@ -145,7 +144,8 @@ a easy way to use FMDB
 
 #### 2. 提供数据库操作的同步方法，复杂功能还没有支持，下个版本会增加
 详细接口请见测试用例
-<br />
+
+--
 
 ### 1.1.0版本主要更新：
 * #### 支持简单的一对一关系模型，模型代码看起来像这样：

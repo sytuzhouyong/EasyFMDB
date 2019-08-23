@@ -12,17 +12,17 @@
 #elif TARGET_OS_MAC
 #endif
 
+#define kSegmentName                "__RegisterModels"
+#define AddSectionSegment(segment)  __attribute((used, section("__DATA, "#segment" ")))
+#define RegisteModel(model)         char * k##model##_xxx AddSectionSegment(__RegisterModels) = ""#model"";
 
 // Database related Objective-C object
-// the object inherted from ZyxBaseModel needs to override +(void)load;
-// and in + (void)load method, you should call ZyxBaseModel::registeModel:(Class)clazz.
 @interface ZyxBaseModel : NSObject
 
 @property (nonatomic, assign) NSUInteger id;     // autoincreasement
 
 /// subclass of ZyxBaseModel needs to override this method
-+ (void)registeModel:(Class)clazz;
-+ (NSMutableSet *)registedModels;
++ (NSSet *)registedModels;
 
 + (NSArray *)ignoredProperties;
 
@@ -37,8 +37,7 @@
 - (NSArray *)query;
 
 
-// key: property name  value: ZyxFieldAttribute object
-/// all property info that predicateProperty: method return YES
+// key: property name;  value: ZyxFieldAttribute object
 + (NSDictionary *)propertiesDictionary;
 
 /// property array which updated

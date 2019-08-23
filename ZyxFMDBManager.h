@@ -16,7 +16,8 @@
 
 SINGLETON_DECLEAR;
 
-// /Documents/name.db
+// Documents/name.db
+- (void)createDBWithName:(NSString *)name forceCreate:(BOOL)forceCreate;
 - (void)createDBWithName:(NSString *)name;
 
 // complex interface

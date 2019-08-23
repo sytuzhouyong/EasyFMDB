@@ -29,23 +29,39 @@
 SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
 
 - (void)createDBWithName:(NSString *)name {
+    [self createDBWithName:name forceCreate:NO];
+}
+
+- (void)createDBWithName:(NSString *)name forceCreate:(BOOL)forceCreate {
     @synchronized(self) {
         NSString *dbPath = [ZyxFMDBManager dbPathWithName:name];
         self.dbPath = dbPath;
         
         if (_dbQueue == nil || _dbQueue.path.length == 0) {
-            if (![[NSFileManager defaultManager] fileExistsAtPath:dbPath]) {
+            BOOL existed = [[NSFileManager defaultManager] fileExistsAtPath:dbPath];
+            if (!existed) {
                 [ZyxFMDBManager createTablesInDBPath:dbPath];
             } else {
-                FMDatabase *db = [[FMDatabase alloc] initWithPath:dbPath];
-                if (![db open]) {
-                    LogError(@"oh no, open db in (%@) failed!", dbPath);
-                    exit(0);
+                if (forceCreate) {
+                    NSError *error = nil;
+                    BOOL deleted = [[NSFileManager defaultManager] removeItemAtPath:dbPath error:&error];
+                    if (deleted) {
+                        [ZyxFMDBManager createTablesInDBPath:dbPath];
+                    } else {
+                        LogError(@"delete db file failed, error = %@", error);
+                        return;
+                    }
                 }
-                
-                [ZyxFMDBManager updateTableInDB:db];
-                [db close];
             }
+            
+            FMDatabase *db = [[FMDatabase alloc] initWithPath:dbPath];
+            if (![db open]) {
+                LogError(@"oh no, open db in (%@) failed!", dbPath);
+                exit(0);
+            }
+            
+            [ZyxFMDBManager updateTableInDB:db];
+            [db close];
         } else if (![dbPath isEqualToString:_dbQueue.path]) {
             [_dbQueue close];
         }
@@ -65,7 +81,7 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
             break;
         }
         
-        NSMutableSet *registedModels = [ZyxBaseModel registedModels];
+        NSSet *registedModels = [ZyxBaseModel registedModels];
         for (NSString *value in registedModels) {
             Class clazz = NSClassFromString(value);
             NSString *sql = [clazz sql];
@@ -80,7 +96,7 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
         
         [db close];
         
-        LogGreen(@"create tables success!");
+        LogInfo(@"create tables success!");
         return;
     }
     while (NO);
@@ -150,7 +166,7 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
     if (!result) {
         LogError(@"db add model %@ failed, error code: %d, erro message: %@", model, db.lastErrorCode, db.lastErrorMessage);
     } else {
-        NSUInteger lastId = [db lastInsertRowId];
+        NSUInteger lastId = (NSUInteger)[db lastInsertRowId];
         LogInfo(@"last insert row id = %@, in table : %@", @(lastId), TABLE_NAME(model));
         model.id = lastId;
     }

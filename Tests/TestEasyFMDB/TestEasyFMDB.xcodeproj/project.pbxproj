@@ -16,16 +16,14 @@
 		2502231E1B4A625900ABF1A5 /* ZyxBaseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 250223161B4A625900ABF1A5 /* ZyxBaseModel.m */; };
 		2502231F1B4A625900ABF1A5 /* ZyxFieldAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 250223181B4A625900ABF1A5 /* ZyxFieldAttribute.m */; };
 		250223201B4A625900ABF1A5 /* ZyxFMDBManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2502231A1B4A625900ABF1A5 /* ZyxFMDBManager.m */; };
-		250223251B4A62AB00ABF1A5 /* Teacher.m in Sources */ = {isa = PBXBuildFile; fileRef = 250223241B4A62AB00ABF1A5 /* Teacher.m */; };
-		250223281B4A62B700ABF1A5 /* Student.m in Sources */ = {isa = PBXBuildFile; fileRef = 250223271B4A62B700ABF1A5 /* Student.m */; };
 		2502232A1B4A635200ABF1A5 /* TestEasyFMDBTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 250223291B4A635200ABF1A5 /* TestEasyFMDBTests.m */; };
-		2502232D1B4A63F500ABF1A5 /* ZyxContact.m in Sources */ = {isa = PBXBuildFile; fileRef = 2502232C1B4A63F500ABF1A5 /* ZyxContact.m */; };
 		2502233B1B4A649E00ABF1A5 /* FMDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 250223311B4A649E00ABF1A5 /* FMDatabase.m */; };
 		2502233C1B4A649E00ABF1A5 /* FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 250223331B4A649E00ABF1A5 /* FMDatabaseAdditions.m */; };
 		2502233D1B4A649E00ABF1A5 /* FMDatabasePool.m in Sources */ = {isa = PBXBuildFile; fileRef = 250223351B4A649E00ABF1A5 /* FMDatabasePool.m */; };
 		2502233E1B4A649E00ABF1A5 /* FMDatabaseQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 250223371B4A649E00ABF1A5 /* FMDatabaseQueue.m */; };
 		2502233F1B4A649E00ABF1A5 /* FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2502233A1B4A649E00ABF1A5 /* FMResultSet.m */; };
 		250223411B4A65F300ABF1A5 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 250223401B4A65F300ABF1A5 /* libsqlite3.dylib */; };
+		253D4A35230FBA0000953AC9 /* Models.m in Sources */ = {isa = PBXBuildFile; fileRef = 2502232C1B4A63F500ABF1A5 /* Models.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,13 +59,9 @@
 		2502231B1B4A625900ABF1A5 /* ZyxMacro.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZyxMacro.h; path = ../../../ZyxMacro.h; sourceTree = "<group>"; };
 		2502231C1B4A625900ABF1A5 /* ZyxSingleton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZyxSingleton.h; path = ../../../ZyxSingleton.h; sourceTree = "<group>"; };
 		2502231D1B4A625900ABF1A5 /* ZyxTypedef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZyxTypedef.h; path = ../../../ZyxTypedef.h; sourceTree = "<group>"; };
-		250223231B4A62AB00ABF1A5 /* Teacher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Teacher.h; sourceTree = "<group>"; };
-		250223241B4A62AB00ABF1A5 /* Teacher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Teacher.m; sourceTree = "<group>"; };
-		250223261B4A62B700ABF1A5 /* Student.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Student.h; sourceTree = "<group>"; };
-		250223271B4A62B700ABF1A5 /* Student.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Student.m; sourceTree = "<group>"; };
 		250223291B4A635200ABF1A5 /* TestEasyFMDBTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestEasyFMDBTests.m; sourceTree = "<group>"; };
-		2502232B1B4A63F500ABF1A5 /* ZyxContact.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZyxContact.h; sourceTree = "<group>"; };
-		2502232C1B4A63F500ABF1A5 /* ZyxContact.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZyxContact.m; sourceTree = "<group>"; };
+		2502232B1B4A63F500ABF1A5 /* Models.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Models.h; sourceTree = "<group>"; };
+		2502232C1B4A63F500ABF1A5 /* Models.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Models.m; sourceTree = "<group>"; };
 		250223301B4A649E00ABF1A5 /* FMDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMDatabase.h; sourceTree = "<group>"; };
 		250223311B4A649E00ABF1A5 /* FMDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMDatabase.m; sourceTree = "<group>"; };
 		250223321B4A649E00ABF1A5 /* FMDatabaseAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMDatabaseAdditions.h; sourceTree = "<group>"; };
@@ -149,12 +143,8 @@
 			isa = PBXGroup;
 			children = (
 				250223291B4A635200ABF1A5 /* TestEasyFMDBTests.m */,
-				2502232B1B4A63F500ABF1A5 /* ZyxContact.h */,
-				2502232C1B4A63F500ABF1A5 /* ZyxContact.m */,
-				250223261B4A62B700ABF1A5 /* Student.h */,
-				250223271B4A62B700ABF1A5 /* Student.m */,
-				250223231B4A62AB00ABF1A5 /* Teacher.h */,
-				250223241B4A62AB00ABF1A5 /* Teacher.m */,
+				2502232B1B4A63F500ABF1A5 /* Models.h */,
+				2502232C1B4A63F500ABF1A5 /* Models.m */,
 				250223071B4A621B00ABF1A5 /* Supporting Files */,
 			);
 			path = TestEasyFMDBTests;
@@ -253,6 +243,8 @@
 				TargetAttributes = {
 					250222E91B4A621B00ABF1A5 = {
 						CreatedOnToolsVersion = 6.2;
+						DevelopmentTeam = J4XA75C22J;
+						ProvisioningStyle = Manual;
 					};
 					250223021B4A621B00ABF1A5 = {
 						CreatedOnToolsVersion = 6.2;
@@ -265,6 +257,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -311,6 +304,7 @@
 				2502233D1B4A649E00ABF1A5 /* FMDatabasePool.m in Sources */,
 				2502233E1B4A649E00ABF1A5 /* FMDatabaseQueue.m in Sources */,
 				250222F61B4A621B00ABF1A5 /* ViewController.m in Sources */,
+				253D4A35230FBA0000953AC9 /* Models.m in Sources */,
 				250222F31B4A621B00ABF1A5 /* AppDelegate.m in Sources */,
 				2502233F1B4A649E00ABF1A5 /* FMResultSet.m in Sources */,
 				250222F01B4A621B00ABF1A5 /* main.m in Sources */,
@@ -323,9 +317,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2502232A1B4A635200ABF1A5 /* TestEasyFMDBTests.m in Sources */,
-				250223251B4A62AB00ABF1A5 /* Teacher.m in Sources */,
-				2502232D1B4A63F500ABF1A5 /* ZyxContact.m in Sources */,
-				250223281B4A62B700ABF1A5 /* Student.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -440,11 +431,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = J4XA75C22J;
 				INFOPLIST_FILE = TestEasyFMDB/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "Zyx.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = tzxd_wildcard;
 			};
 			name = Debug;
 		};
@@ -452,11 +446,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = J4XA75C22J;
 				INFOPLIST_FILE = TestEasyFMDB/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "Zyx.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = tzxd_wildcard;
 			};
 			name = Release;
 		};
