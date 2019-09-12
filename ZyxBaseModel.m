@@ -25,10 +25,10 @@ static NSArray<NSString *> * ReadConfiguration(char *section);
     NSMutableArray *_updatedPropertiesExceptId;
     NSMutableArray *_watchedKeys;
     NSMutableSet *_updatedPropertiesSet;
-    BOOL _isObserverEnabled;
+    BOOL _observerEnabled;
 }
 
-+ (NSSet *)registedModels {
++ (NSSet<NSString *> *)registedModels {
     static NSSet *registedModels = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -39,32 +39,42 @@ static NSArray<NSString *> * ReadConfiguration(char *section);
     return registedModels;
 }
 
-+ (NSArray *)ignoredProperties {
++ (NSArray<NSString *> *)ignoredProperties {
     return nil;
 }
 
 #pragma mark - Init
 
-- (id)init {
+- (instancetype)init {
     return [self initWithObserverEnabledFlag:YES];
 }
 
-- (id)initWithObserverEnabledFlag:(BOOL)isObserverEnable {
+- (instancetype)initWithObserverEnabledFlag:(BOOL)observerEnabled {
     if (self = [super init]) {
-        _isObserverEnabled = isObserverEnable;
+        _observerEnabled = observerEnabled;
         _updatedProperties = [[NSMutableArray alloc] init];
         _updatedPropertiesExceptId = [[NSMutableArray alloc] init];
         _updatedPropertiesSet = [NSMutableSet set];
         _watchedKeys = [[NSMutableArray alloc] init];
         
-        if (isObserverEnable) {
+        if (observerEnabled) {
             [self addWatchKeys];
         }
     }
     return self;
 }
+- (void)setObserverEnabled:(BOOL)observerEnabled {
+    if (observerEnabled) {
+        [self addWatchKeys];
+    } else {
+        [_updatedProperties removeAllObjects];
+        [_updatedPropertiesExceptId removeAllObjects];
+        [_updatedPropertiesSet removeAllObjects];
+        [_watchedKeys removeAllObjects];
+    }
+}
 
-- (id)copyWithZone:(NSZone *)zone {
+- (instancetype)copyWithZone:(NSZone *)zone {
     id copy = [[[self class] alloc] init];
     if (copy) {
         [copy setId:_id];
@@ -95,17 +105,6 @@ static NSArray<NSString *> * ReadConfiguration(char *section);
         }
     }
 //    }
-}
-
-- (void)setObserverEnabled:(BOOL)enabled {
-    if (enabled) {
-        [self addWatchKeys];
-    } else {
-        [_updatedProperties removeAllObjects];
-        [_updatedPropertiesExceptId removeAllObjects];
-        [_updatedPropertiesSet removeAllObjects];
-        [_watchedKeys removeAllObjects];
-    }
 }
 
 #pragma mark - Common database operation methods

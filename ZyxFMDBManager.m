@@ -167,13 +167,13 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
         LogError(@"db add model %@ failed, error code: %d, erro message: %@", model, db.lastErrorCode, db.lastErrorMessage);
     } else {
         NSUInteger lastId = (NSUInteger)[db lastInsertRowId];
-        LogInfo(@"last insert row id = %@, in table : %@", @(lastId), TABLE_NAME(model));
+//        LogInfo(@"last insert row id = %@, in table : %@", @(lastId), TABLE_NAME(model));
         model.id = lastId;
     }
     return result;
 }
 
-// 可能会有bug
+// 可能会有bug 涉及到关联表插入
 - (BOOL)saveModel:(ZyxBaseModel *)model inDatabase:(FMDatabase *)db {
     NSArray *properties = [model updatedPropertiesExceptId];
     NSDictionary *propertyDict = [model.class propertiesDictionary];
@@ -181,6 +181,7 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
     NSMutableArray *tobeAddedModels = [NSMutableArray array];
     for (NSString *key in properties) {
         ZyxFieldAttribute *p = propertyDict[key];
+        // 如果是关联model，就需要插入绑定的model
         if (p.isBaseModel) {
             ZyxBaseModel *subModel = [model valueForKey:key];
             if (subModel.id == 0) {
@@ -192,8 +193,9 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
     
     BOOL result = YES;
     if (tobeAddedModels.count != 0) {
+        BOOL needTransaction = tobeAddedModels.count > 1;
         // 事务提交
-        if (![db beginTransaction]) {
+        if (needTransaction && ![db beginTransaction]) {
             LogError(@"oh no, begin transaction failed!");
             return NO;
         }
@@ -202,7 +204,7 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
             result &= [self saveSimpleModel:model inDatabase:db];
         }
         
-        if (![db commit]) {
+        if (needTransaction && ![db commit]) {
             LogError(@"oh no, commit transaction failed!");
             return NO;
         }
@@ -1005,7 +1007,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         NSString *v = [vsql substringToIndex:vsql.length-2];
         NSString *l = [lsql substringToIndex:lsql.length-2];
         sql = [NSString stringWithFormat:@"insert into %@ (%@) values (%@)", TABLE_NAME(model), p, v];
-        LogInfo(@"makeInsertSQL:\n\t insert into %@ (%@) values (%@)", TABLE_NAME(model), p, l);
+//        LogInfo(@"makeInsertSQL:\n\t insert into %@ (%@) values (%@)", TABLE_NAME(model), p, l);
         
     } while (FALSE);
     

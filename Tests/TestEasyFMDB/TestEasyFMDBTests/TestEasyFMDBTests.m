@@ -316,8 +316,17 @@
 
 - (void)testPerformanceExample {
     // This is an example of a performance test case.
+    NSUInteger length = 1000;
+    NSMutableArray *contacts = [NSMutableArray arrayWithCapacity:length];
+    for (int i=0; i<length; i++) {
+        [contacts addObject:[self contact]];
+    }
     [self measureBlock:^{
         // Put the code you want to measure the time of here.
+        // 1. 100次 平均每次0.111s
+        for (int i=0; i<length; i++) {
+            [self.dbManager save:contacts[i] withCompletion:nil];
+        }
     }];
 }
 
