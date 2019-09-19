@@ -20,7 +20,10 @@
 @interface ZyxFMDBManager ()
 
 @property (nonatomic, strong) FMDatabaseQueue *dbQueue;
-@property (nonatomic, copy) NSString *dbPath;
+@property (nonatomic, strong) dispatch_queue_t wrapper_queue;
+@property (nonatomic, copy) NSString *dbPath;                   // 数据库文件路径
+@property (nonatomic, assign) NSUInteger maxConcurrentCount;    // 最大并发数
+@property (nonatomic, strong) dispatch_semaphore_t semaphore;   // 数据库最大并发数信号量
 
 @end
 
@@ -66,7 +69,14 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
             [_dbQueue close];
         }
         
-        _dbQueue = [[FMDatabaseQueue alloc] initWithPath:dbPath];
+        _dbQueue = [[FMDatabaseQueue alloc] initWithPath:dbPath flags:SQLITE_OPEN_READWRITE];
+        _wrapper_queue = dispatch_queue_create("easyfmdb.read", DISPATCH_QUEUE_CONCURRENT);
+        _maxConcurrentCount = [[NSProcessInfo processInfo] activeProcessorCount];
+        LogInfo(@"avaiable processor count = %@", @(_maxConcurrentCount));
+        // ⚠️ 不做这个判断会偶先 EXC_BAD_INSTRUCTION (code=EXC_I386_INVOP, subcode=0x0) 异常
+        if (_semaphore == nil) {
+            _semaphore = dispatch_semaphore_create(_maxConcurrentCount);
+        }
         LogInfo(@"dbPath = %@", dbPath);
     }
 }
@@ -160,6 +170,9 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
 
 #pragma mark - Save Model
 
+/**
+ * @param model 要插入的对象，这个对象中插入的数据都只有基本数据类型，不存在Object对象
+ */
 - (BOOL)saveSimpleModel:(ZyxBaseModel *)model inDatabase:(FMDatabase *)db {
     NSString *sql = [self makeInsertSQL:model];
     BOOL result = [self database:db executeUpdate:sql withArgumentsInArray:[model updatedValuesExceptId]];
@@ -215,21 +228,27 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
 
 - (void)saveModel:(ZyxBaseModel *)model withCompletion:(DBUpdateOperationResultBlock)block {
     __weak typeof(self) weakself = self;
-    [_dbQueue inDatabase:^(FMDatabase *db) {
-        BOOL result = [weakself saveModel:model inDatabase:db];
-        EXECUTE_BLOCK1(result);
-    }];
+    dispatch_barrier_async(_wrapper_queue, ^{
+        dispatch_semaphore_wait(weakself.semaphore, DISPATCH_TIME_FOREVER);
+        [weakself.dbQueue inDatabase:^(FMDatabase *db) {
+            BOOL result = [weakself saveModel:model inDatabase:db];
+            EXECUTE_BLOCK1(result);
+            dispatch_semaphore_signal(weakself.semaphore);
+        }];
+    });
 }
 
 - (void)saveModels:(NSArray *)models withCompletion:(DBUpdateOperationResultBlock)block {
     __weak typeof(self) weakself = self;
-    [_dbQueue inDatabase:^(FMDatabase *db) {
-        BOOL result = YES;
-        for (ZyxBaseModel *model in models) {
-            result &= [weakself saveModel:model inDatabase:db];
-        }
-        EXECUTE_BLOCK1(result);
-    }];
+    dispatch_barrier_async(_wrapper_queue, ^{
+        [weakself.dbQueue inDatabase:^(FMDatabase *db) {
+            BOOL result = YES;
+            for (ZyxBaseModel *model in models) {
+                result &= [weakself saveModel:model inDatabase:db];
+            }
+            EXECUTE_BLOCK1(result);
+        }];
+    });
 }
 
 - (void)save:(id)param withCompletion:(DBUpdateOperationResultBlock)block {
@@ -256,35 +275,39 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
 // update by id
 - (void)updateModel:(ZyxBaseModel *)model withCompletion:(DBUpdateOperationResultBlock)block {
     NSArray *array = [self makeUpdateSQLByIdInModel:model];
-    
-    [_dbQueue inDatabase:^(FMDatabase *db) {
-        NSString *sql = [array objectAtIndex:0];
-        NSArray *updatedValues = [array objectAtIndex:2];
-        BOOL result = [db executeUpdate:sql withArgumentsInArray:updatedValues];
-        [self checkUpdateSQLResult:db];
-        
-        EXECUTE_BLOCK1(result);
-    }];
+    __weak typeof(self) weakself = self;
+    dispatch_barrier_async(_wrapper_queue, ^{
+        [weakself.dbQueue inDatabase:^(FMDatabase *db) {
+            NSString *sql = [array objectAtIndex:0];
+            NSArray *updatedValues = [array objectAtIndex:2];
+            BOOL result = [db executeUpdate:sql withArgumentsInArray:updatedValues];
+            [self checkUpdateSQLResult:db];
+            
+            EXECUTE_BLOCK1(result);
+        }];
+    });
 }
 
 // update every model in array by id
-- (void)updateModels:(NSArray *)models withCompletion:(DBUpdateOperationResultBlock)block
-{
-    [_dbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        BOOL result = YES;
-        for (ZyxBaseModel *model in models) {
-            NSArray *sqlArray = [self makeUpdateSQLByIdInModel:model];
-            NSString *sql = [sqlArray objectAtIndex:0];
-            NSArray *updatedValues = [sqlArray objectAtIndex:2];
-            result &= [db executeUpdate:sql withArgumentsInArray:updatedValues];
-            [self checkUpdateSQLResult:db];
-        }
-        if (!result) {
-            *rollback = YES;
-        }
-        
-        EXECUTE_BLOCK1(result);
-    }];
+- (void)updateModels:(NSArray *)models withCompletion:(DBUpdateOperationResultBlock)block {
+    __weak typeof(self) weakself = self;
+    dispatch_barrier_async(_wrapper_queue, ^{
+        [weakself.dbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+            BOOL result = YES;
+            for (ZyxBaseModel *model in models) {
+                NSArray *sqlArray = [self makeUpdateSQLByIdInModel:model];
+                NSString *sql = [sqlArray objectAtIndex:0];
+                NSArray *updatedValues = [sqlArray objectAtIndex:2];
+                result &= [db executeUpdate:sql withArgumentsInArray:updatedValues];
+                [self checkUpdateSQLResult:db];
+            }
+            if (!result) {
+                *rollback = YES;
+            }
+            
+            EXECUTE_BLOCK1(result);
+        }];
+    });
 }
 
 // update model by update properties and query properties
@@ -300,14 +323,17 @@ SINGLETON_IMPLEMENTATION(ZyxFMDBManager);
         EXECUTE_BLOCK1(NO);
     }
     
-    [_dbQueue inDatabase:^(FMDatabase *db) {
-        NSArray *array = [self makeUpdateSQL:model updateProperties:updates queryProperties:queries matches:matches logics:logics];
-        NSString *sql = [array objectAtIndex:0];
-        NSArray *values = [array objectAtIndex:2];
-        BOOL result = [db executeUpdate:sql withArgumentsInArray:values];
-        [self checkUpdateSQLResult:db];
-        EXECUTE_BLOCK1(result);
-    }];
+    __weak typeof(self) weakself = self;
+    dispatch_barrier_async(_wrapper_queue, ^{
+        [weakself.dbQueue inDatabase:^(FMDatabase *db) {
+            NSArray *array = [self makeUpdateSQL:model updateProperties:updates queryProperties:queries matches:matches logics:logics];
+            NSString *sql = [array objectAtIndex:0];
+            NSArray *values = [array objectAtIndex:2];
+            BOOL result = [db executeUpdate:sql withArgumentsInArray:values];
+            [self checkUpdateSQLResult:db];
+            EXECUTE_BLOCK1(result);
+        }];
+    });
 }
 
 // update model by update properties and query properties
@@ -323,15 +349,18 @@ queryPropertiesAndValues:(NSDictionary *)queries
         EXECUTE_BLOCK1(NO);
     }
     
-    [_dbQueue inDatabase:^(FMDatabase *db) {
-        NSArray *array = [self makeUpdateSQL:model updateProperties:updates queryProperties:queries matches:matches logics:logics];
-        NSString *sql = [array objectAtIndex:0];
-        NSArray *values = [array objectAtIndex:2];
-        
-        BOOL result = [db executeUpdate:sql withArgumentsInArray:values];
-        [self checkUpdateSQLResult:db];
-        EXECUTE_BLOCK1(result);
-    }];
+    __weak typeof(self) weakself = self;
+    dispatch_barrier_async(_wrapper_queue, ^{
+        [weakself.dbQueue inDatabase:^(FMDatabase *db) {
+            NSArray *array = [self makeUpdateSQL:model updateProperties:updates queryProperties:queries matches:matches logics:logics];
+            NSString *sql = [array objectAtIndex:0];
+            NSArray *values = [array objectAtIndex:2];
+            
+            BOOL result = [db executeUpdate:sql withArgumentsInArray:values];
+            [self checkUpdateSQLResult:db];
+            EXECUTE_BLOCK1(result);
+        }];
+    });
 }
 
 - (void)updateWithDict:(NSDictionary *)dict completion:(DBUpdateOperationResultBlock)block {
@@ -440,30 +469,39 @@ queryPropertiesAndValues:(NSDictionary *)queries
 }
 
 - (void)deleteModel:(ZyxBaseModel *)model withCompletion:(DBUpdateOperationResultBlock)block {
-    [_dbQueue inDatabase:^(FMDatabase *db) {
-        BOOL result = [self deleteModel:model inDatabase:db];
-        EXECUTE_BLOCK1(result);
-    }];
+    __weak typeof(self) weakself = self;
+    dispatch_barrier_async(_wrapper_queue, ^{
+        [weakself.dbQueue inDatabase:^(FMDatabase *db) {
+            BOOL result = [self deleteModel:model inDatabase:db];
+            EXECUTE_BLOCK1(result);
+        }];
+    });
 }
 
 - (void)deleteModels:(NSArray *)models withCompletion:(DBUpdateOperationResultBlock)block {
-    [_dbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        BOOL result = YES;
-        for (ZyxBaseModel *model in models) {
-            result &= [self deleteModel:model inDatabase:db];
-        }
-        EXECUTE_BLOCK1(result);
-    }];
+    __weak typeof(self) weakself = self;
+    dispatch_barrier_async(_wrapper_queue, ^{
+        [weakself.dbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+            BOOL result = YES;
+            for (ZyxBaseModel *model in models) {
+                result &= [self deleteModel:model inDatabase:db];
+            }
+            EXECUTE_BLOCK1(result);
+        }];
+    });
 }
 
 - (void)deleteAllModelsInTable:(Class)c withCompletion:(DBUpdateOperationResultBlock)block {
-    [_dbQueue inDatabase:^(FMDatabase *db) {
-        NSString *sql = [NSString stringWithFormat:@"delete from %@", TABLE_NAME_C(c)];
-        BOOL result = [db executeUpdate:sql];
-        LogInfo(@"delete all sql: %@", sql);
-        [self checkUpdateSQLResult:db];
-        EXECUTE_BLOCK1(result);
-    }];
+    __weak typeof(self) weakself = self;
+    dispatch_barrier_async(_wrapper_queue, ^{
+        [weakself.dbQueue inDatabase:^(FMDatabase *db) {
+            NSString *sql = [NSString stringWithFormat:@"delete from %@", TABLE_NAME_C(c)];
+            BOOL result = [db executeUpdate:sql];
+            LogInfo(@"delete all sql: %@", sql);
+            [self checkUpdateSQLResult:db];
+            EXECUTE_BLOCK1(result);
+        }];
+    });
 }
 
 - (void)deleteModel:(ZyxBaseModel *)model
@@ -476,24 +514,27 @@ queryPropertiesAndValues:(NSDictionary *)queries
         return;
     }
     
-    [_dbQueue inDatabase:^(FMDatabase *db) {
-        NSArray *propertiesValues = [model updatedValues];
-        NSDictionary *dict = @{kEasyFMDBProperties: properties,
-                               kEasyFMDBValues: propertiesValues,
-                               kEasyFMDBMatches:(matches == nil ? @(ZyxCompareTypeEqual) : matches),
-                               kEasyFMDBLogics:(logics == nil ? @(ZyxLogicRelationshipTypeAnd) : logics)};
-        NSArray *array = [self makeQueryPredicateSql:model withParam:dict];
-        NSString *sql = [array objectAtIndex:0];
-        NSString *logSql = [array objectAtIndex:1];
-        NSArray *values = [array objectAtIndex:2];
-        
-        sql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), sql];
-        logSql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), logSql];
-        LogInfo(@"delete sql: %@", logSql);
-        BOOL result = [db executeUpdate:sql withArgumentsInArray:values];
-        [self checkUpdateSQLResult:db];
-        EXECUTE_BLOCK1(result);
-    }];
+    __weak typeof(self) weakself = self;
+    dispatch_barrier_async(_wrapper_queue, ^{
+        [weakself.dbQueue inDatabase:^(FMDatabase *db) {
+            NSArray *propertiesValues = [model updatedValues];
+            NSDictionary *dict = @{kEasyFMDBProperties: properties,
+                                   kEasyFMDBValues: propertiesValues,
+                                   kEasyFMDBMatches:(matches == nil ? @(ZyxCompareTypeEqual) : matches),
+                                   kEasyFMDBLogics:(logics == nil ? @(ZyxLogicRelationshipTypeAnd) : logics)};
+            NSArray *array = [self makeQueryPredicateSql:model withParam:dict];
+            NSString *sql = [array objectAtIndex:0];
+            NSString *logSql = [array objectAtIndex:1];
+            NSArray *values = [array objectAtIndex:2];
+            
+            sql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), sql];
+            logSql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), logSql];
+            LogInfo(@"delete sql: %@", logSql);
+            BOOL result = [db executeUpdate:sql withArgumentsInArray:values];
+            [self checkUpdateSQLResult:db];
+            EXECUTE_BLOCK1(result);
+        }];
+    });
 }
 
 - (void)deleteModel:(ZyxBaseModel *)model
@@ -501,23 +542,26 @@ queryPropertiesAndValues:(NSDictionary *)queries
             matches:(NSArray *)matches
              logics:(NSArray *)logics
              withCompletion:(DBUpdateOperationResultBlock)block {
-    [_dbQueue inDatabase:^(FMDatabase *db) {
-        NSDictionary *dict = @{kEasyFMDBProperties: queries.allKeys,
-                               kEasyFMDBValues: queries.allValues,
-                               kEasyFMDBMatches:(matches == nil ? @(ZyxCompareTypeEqual) : matches),
-                               kEasyFMDBLogics:(logics == nil ? @(ZyxLogicRelationshipTypeAnd) : logics)};
-        NSArray *array = [self makeQueryPredicateSql:model withParam:dict];
-        NSString *sql = [array objectAtIndex:0];
-        NSString *logSql = [array objectAtIndex:1];
-        NSArray *values = [array objectAtIndex:2];
-        
-        sql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), sql];
-        logSql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), logSql];
-        LogInfo(@"delete sql: %@", logSql);
-        BOOL result = [db executeUpdate:sql withArgumentsInArray:values];
-        [self checkUpdateSQLResult:db];
-        EXECUTE_BLOCK1(result);
-    }];
+    __weak typeof(self) weakself = self;
+    dispatch_barrier_async(_wrapper_queue, ^{
+        [weakself.dbQueue inDatabase:^(FMDatabase *db) {
+            NSDictionary *dict = @{kEasyFMDBProperties: queries.allKeys,
+                                   kEasyFMDBValues: queries.allValues,
+                                   kEasyFMDBMatches:(matches == nil ? @(ZyxCompareTypeEqual) : matches),
+                                   kEasyFMDBLogics:(logics == nil ? @(ZyxLogicRelationshipTypeAnd) : logics)};
+            NSArray *array = [self makeQueryPredicateSql:model withParam:dict];
+            NSString *sql = [array objectAtIndex:0];
+            NSString *logSql = [array objectAtIndex:1];
+            NSArray *values = [array objectAtIndex:2];
+            
+            sql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), sql];
+            logSql = [NSString stringWithFormat:@"delete from %@ where %@", TABLE_NAME(model), logSql];
+            LogInfo(@"delete sql: %@", logSql);
+            BOOL result = [db executeUpdate:sql withArgumentsInArray:values];
+            [self checkUpdateSQLResult:db];
+            EXECUTE_BLOCK1(result);
+        }];
+    });
 }
 
 - (void)delete:(id)param withCompletion:(DBUpdateOperationResultBlock)block {
@@ -572,8 +616,14 @@ queryPropertiesAndValues:(NSDictionary *)queries
     NSString *sql = [NSString stringWithFormat:@"select * from %@ %@ %@", TABLE_NAME_C(c), orderSQL, rangeSQL];
     sql = [sql stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     LogInfo(@"queryAll sql: %@", sql);
-    NSArray *array = [self executeQuery:c withSQL:sql values:[NSArray array]];
-    EXECUTE_BLOCK2(array != nil, array);
+    
+    WEAKSELF;
+    dispatch_async(_wrapper_queue, ^{
+        dispatch_semaphore_wait(weakself.semaphore, DISPATCH_TIME_FOREVER);
+        NSArray *array = [self executeQuery:c withSQL:sql values:[NSArray array]];
+        dispatch_semaphore_signal(weakself.semaphore);
+        EXECUTE_BLOCK2(array != nil, array);
+    });
 }
 
 // query models under condition
@@ -611,8 +661,13 @@ queryPropertiesAndValues:(NSDictionary *)queries
     logSQL = [NSString stringWithFormat:@"select * from %@ where %@ %@ %@", TABLE_NAME(model), logSQL, orderSQL, rangeSQL];
     LogInfo(@"select sql: %@", logSQL);
     
-    NSArray *array = [self executeQuery:model.class withSQL:sql values:values];
-    EXECUTE_BLOCK2(array != nil, array);
+    WEAKSELF;
+    dispatch_async(_wrapper_queue, ^{
+        dispatch_semaphore_wait(weakself.semaphore, DISPATCH_TIME_FOREVER);
+        NSArray *array = [self executeQuery:model.class withSQL:sql values:values];
+        dispatch_semaphore_signal(weakself.semaphore);
+        EXECUTE_BLOCK2(array != nil, array);
+    });
 }
 
 - (void)query:(id)param withCompletion:(DBQueryOperationResultBlock)block {
@@ -624,9 +679,13 @@ queryPropertiesAndValues:(NSDictionary *)queries
     
     if ([param isKindOfClass:ZyxBaseModel.class]) {
         [self queryModel:param propertiesValues:nil matches:nil logics:nil orders:nil range:range withCompletion:block];
-    } else if ([param isKindOfClass:NSValue.class]) {
+        return;
+    }
+    if ([param isKindOfClass:NSValue.class]) {
         [self queryAllModels:[param pointerValue] orders:nil range:range withCompletion:block];
-    } else if ([param isKindOfClass:NSDictionary.class]) {
+        return;
+    }
+    if ([param isKindOfClass:NSDictionary.class]) {
         NSDictionary *dict = param;
         id model = dict[kEasyFMDBModel];
         
@@ -637,9 +696,9 @@ queryPropertiesAndValues:(NSDictionary *)queries
         
         if ([model isKindOfClass:NSValue.class]) {
             [self queryAllModels:[model pointerValue] orders:orders range:range withCompletion:block];
-        } else {
-            [self queryModel:model propertiesValues:propertiesValues matches:matches logics:logics orders:orders range:range withCompletion:block];
+            return;
         }
+        [self queryModel:model propertiesValues:propertiesValues matches:matches logics:logics orders:orders range:range withCompletion:block];
     }
 }
 
@@ -1007,7 +1066,7 @@ queryPropertiesAndValues:(NSDictionary *)queries
         NSString *v = [vsql substringToIndex:vsql.length-2];
         NSString *l = [lsql substringToIndex:lsql.length-2];
         sql = [NSString stringWithFormat:@"insert into %@ (%@) values (%@)", TABLE_NAME(model), p, v];
-//        LogInfo(@"makeInsertSQL:\n\t insert into %@ (%@) values (%@)", TABLE_NAME(model), p, l);
+        LogInfo(@"makeInsertSQL:\n\t insert into %@ (%@) values (%@)", TABLE_NAME(model), p, l);
         
     } while (FALSE);
     

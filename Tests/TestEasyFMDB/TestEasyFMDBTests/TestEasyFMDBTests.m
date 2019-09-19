@@ -212,15 +212,15 @@
                            }};
     [self.dbManager update:dict withCompletion:^(BOOL success) {
         XCTAssertTrue(success);
+        
+        ZyxContact *model = [[ZyxContact alloc] init];
+        model.homeAddress = @"home_address_6";
+        
+        NSArray *models = [model query];
+        XCTAssertEqual(models.count, 1);
+        ZyxContact *fetch = models.firstObject;
+        XCTAssertTrue([fetch.name isEqualToString:@"name_6_"]);
     }];
-    
-    ZyxContact *model = [[ZyxContact alloc] init];
-    model.homeAddress = @"home_address_6";
-    
-    NSArray *models = [model query];
-    XCTAssertEqual(models.count, 1);
-    contact = models.firstObject;
-    XCTAssertTrue([contact.name isEqualToString:@"name_6_"]);
 }
 
 // update T_ZyxContact set name='name_6_6', home_address = 'home_address_6' where id = 17
@@ -309,14 +309,32 @@
     XCTAssertTrue([student.teacher.name isEqualToString:teacher.name]);
 }
 
+- (void)testReadWriteBarrier {
+    ZyxContact *model = [[ZyxContact alloc] init];
+    model.id = 1;
+    for (int i=0; i<10; i++) {
+        [self.dbManager query:model withCompletion:^(BOOL success, NSArray *models) {
+            XCTAssertEqual(models.count, 0);
+        }];
+    }
+    ZyxContact *contact = [self contact];
+    [self.dbManager save:contact withCompletion:^(BOOL success) {
+        XCTAssertTrue(success);
+    }];
+    [self.dbManager query:model withCompletion:^(BOOL success, NSArray *models) {
+        XCTAssertEqual(models.count, 1);
+    }];
+}
+
 - (void)testExample {
     // This is an example of a functional test case.
     XCTAssert(YES, @"Pass");
 }
 
 - (void)testPerformanceExample {
+    
     // This is an example of a performance test case.
-    NSUInteger length = 1000;
+    NSUInteger length = 100000;
     NSMutableArray *contacts = [NSMutableArray arrayWithCapacity:length];
     for (int i=0; i<length; i++) {
         [contacts addObject:[self contact]];

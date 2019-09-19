@@ -335,13 +335,24 @@ static NSArray<NSString *> * ReadConfiguration(char *section);
 //    NSLog(@"type string : %@", typeString);
     const char *str = typeString.UTF8String;
     
+    if (strcmp(str, @encode(bool)) == 0)            return ZyxFieldTypeBOOL;
     if (strcmp(str, @encode(BOOL)) == 0)            return ZyxFieldTypeBOOL;
     if (strcmp(str, @encode(NSInteger)) == 0)       return ZyxFieldTypeNSInteger;
     if (strcmp(str, @encode(NSUInteger)) == 0)      return ZyxFieldTypeNSUInteger;
     if (strcmp(str, @encode(CGFloat)) == 0)         return ZyxFieldTypeCGFloat;
+    if (strcmp(str, @encode(int)) == 0)             return ZyxFieldTypeNSInteger;
+    if (strcmp(str, @encode(short)) == 0)           return ZyxFieldTypeNSInteger;
+    if (strcmp(str, @encode(unsigned)) == 0)        return ZyxFieldTypeNSUInteger;
+    if (strcmp(str, @encode(long)) == 0)            return ZyxFieldTypeNSInteger;
+    if (strcmp(str, @encode(long long int)) == 0)   return ZyxFieldTypeNSInteger;
+    if (strcmp(str, @encode(unsigned long)) == 0)   return ZyxFieldTypeNSUInteger;
+    if (strcmp(str, @encode(unsigned long long int)) == 0)   return ZyxFieldTypeNSUInteger;
+    if (strcmp(str, @encode(float)) == 0)           return ZyxFieldTypeCGFloat;
+    if (strcmp(str, @encode(double)) == 0)          return ZyxFieldTypeCGFloat;
+    if (strcmp(str, @encode(char)) == 0)            return ZyxFieldTypeNSInteger;
     if (strcmp(str, @"NSDate".UTF8String) == 0)     return ZyxFieldTypeNSDate;
     if (strcmp(str, @"NSString".UTF8String) == 0)   return ZyxFieldTypeNSString;
-    
+
     LogWarning(@"oh no, unrecognized data type : %s", str);
     return ZyxFieldTypeUnkonw;
 }

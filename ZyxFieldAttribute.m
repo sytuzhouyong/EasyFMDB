@@ -53,7 +53,7 @@
         case ZyxFieldTypeCGFloat:                return @"double";
         case ZyxFieldTypeNSString:               return @"text";
         case ZyxFieldTypeNSDate:                 return @"date";
-        case ZyxFieldTypeBaseModel:           return @"integer unsigned";
+        case ZyxFieldTypeBaseModel:             return @"base model";
         default: {
             NSLog(@"oh no, unrecognized data type : %lu", (unsigned long)type);
             return @"";

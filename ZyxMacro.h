@@ -69,11 +69,18 @@
     #define LogWarning(frmt, ...)   LogYellow(frmt, ##__VA_ARGS__)
     #define LogInfo(frmt, ...)      LogGreen(frmt, ##__VA_ARGS__)
 #else
-
-    #define LogError(frmt, ...)     NSLog(frmt, ##__VA_ARGS__)
-    #define LogWarning(frmt, ...)   NSLog(frmt, ##__VA_ARGS__)
-    #define LogInfo(frmt, ...)      NSLog(frmt, ##__VA_ARGS__)
+    #if 0
+        #define LogError(frmt, ...)     NSLog(frmt, ##__VA_ARGS__)
+        #define LogWarning(frmt, ...)   NSLog(frmt, ##__VA_ARGS__)
+        #define LogInfo(frmt, ...)      NSLog(frmt, ##__VA_ARGS__)
+    #else
+        #define LogError(frmt, ...)
+        #define LogWarning(frmt, ...)
+        #define LogInfo(frmt, ...)      
+    #endif
 #endif
+
+#define WEAKSELF __weak typeof(self) weakself = self
 
 #pragma mark - Time Tick
 
