@@ -2,4 +2,4 @@ language: objective-c
 osx_image: xcode10.3
 xcode_project: Tests/TestEasyFMDB/TestEasyFMDB.xcodeproj # path to your xcodeproj folder
 xcode_scheme: TestEasyFMDBTests
-xcode_sdk: iphonesimulator12.2
+xcode_destination: platform=iOS Simulator,OS=11.3,name=iPhone X
