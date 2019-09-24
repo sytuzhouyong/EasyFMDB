@@ -20,8 +20,8 @@ a easy way to use FMDB
 --
 
 ## 准备工作：
-#### 1. 进入工程根目录，运行pod install，安装依赖项目FMDB，打开workspace工程
-#### 2. 定义自己的model，看起来像下面的代码：
+#### 1. 进入`根目录/Test/TestEasyFMDB`，打开工程`TestEasyFMDB.xcodeproj`
+#### 2. 定义自己的model，示例见`Models.h`文件，看起来像下面的代码：
 	// ZyxContact.h
 	@interface ZyxContact : ZyxBaseModel
 	
@@ -45,6 +45,9 @@ a easy way to use FMDB
 --
 
 ## 用例：
+> 完成的功能测试用例见`TestEasyFMDBTests.m`文件
+> 在运行性能用例前记得将日志打印功能关闭，开关在`ZyxMacro.h`文件第74行，将`#if 1`改成`#if 0`
+
 ### 1. 插入数据
     // 初始化除了id之外的属性
     ZyxContact *contact = [ZyxContact alloc] init];
@@ -132,22 +135,25 @@ a easy way to use FMDB
 
 # 版本更新历史
 
-### 2.0.1版本更新：
+## 2.2.0版本更新:
+#### 1. 恢复对基础数据类型 int, long, float, double等的支持
+#### 2. 增加数据库最大并发数的限制, 并发数和当前设备的CPU核数相等
+#### 3. 优化数据库读写性能, 增加保证读操作并行,写操作串行的机制
+
+
+## 2.0.1版本更新：
 #### 1. 去掉自定义`model`的`load`注册方式，改为编译时注册方式
 
---
 
-### 2.0.0版本主要更新：
+## 2.0.0版本更新：
 #### 1.简化接口名称，老接口已经移除
 `ZyxBaseModel`直接提供数据库基本操作接口，但是功能没有直接调用ZyxFMDBManager强大。
 详细接口请见测试用例
-
-#### 2. 提供数据库操作的同步方法，复杂功能还没有支持，下个版本会增加
+### 2. 提供数据库操作的同步方法，复杂功能还没有支持，下个版本会增加
 详细接口请见测试用例
 
---
 
-### 1.1.0版本主要更新：
+## 1.1.0版本更新：
 * #### 支持简单的一对一关系模型，模型代码看起来像这样：
 	
 		@interface Teacher : ZyxBaseModel

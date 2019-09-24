@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "EasyFMDB"
-  s.version      = "2.0.1"
+  s.version      = "2.2.0"
   s.summary      = "EasyFMDB provides a way of object oriented to use FMDB."
 
   s.description  = <<-DESC
@@ -73,7 +73,7 @@ Pod::Spec.new do |s|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  s.source       = { :git => "https://github.com/sytuzhouyong/EasyFMDB.git", :tag => "2.0.1" }
+  s.source       = { :git => "https://github.com/sytuzhouyong/EasyFMDB.git", :tag => "2.2.0" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #

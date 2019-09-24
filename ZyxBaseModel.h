@@ -25,7 +25,7 @@
 @property (nonatomic, assign) NSUInteger id;
 
 /**
- * @param isObserverEnable 是否开启属性监控 默认开启
+ * @param observerEnabled 是否开启属性监控 默认开启
  * 开启后model中的属性修改都将被监控
  */
 - (instancetype)initWithObserverEnabledFlag:(BOOL)observerEnabled;

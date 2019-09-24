@@ -11,6 +11,7 @@
 #import "EasyFMDB.h"
 #import "Models.h"
 
+
 @interface TestEasyFMDBTests : XCTestCase
 
 @property (nonatomic, retain) ZyxFMDBManager *dbManager;
@@ -37,6 +38,12 @@
     number++;
     
     ZyxContact *contact = [[ZyxContact alloc] init];
+    contact.b1 = true;
+    contact.b2 = TRUE;
+    contact.i2 = 15;
+    contact.i5 = 1024;
+    contact.i3 = 21221;
+    contact.ch = 'c';
     contact.name = [NSString stringWithFormat:@"name_%d", number];
     contact.age = number;
     contact.homeAddress = [NSString stringWithFormat:@"home_address_%d", number];
@@ -102,9 +109,9 @@
 // select * from T_ZyxContact where age = 10
 - (void)test20_QueryModelByProperty {
     ZyxContact *model = [[ZyxContact alloc] init];
-    model.age = 10;
+    model.ch = 'c';
     NSArray *models = [model query];
-    XCTAssertEqual(models.count, 1);
+    XCTAssertTrue(models.count > 0 );
 }
 
 // select * from T_ZyxContact where age = 10 or/and name = 'name_10'
@@ -332,7 +339,6 @@
 }
 
 - (void)testPerformanceExample {
-    
     // This is an example of a performance test case.
     NSUInteger length = 100000;
     NSMutableArray *contacts = [NSMutableArray arrayWithCapacity:length];
